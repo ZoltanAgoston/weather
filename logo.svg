@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 56" width="260" height="56">
+<defs>
+<linearGradient id="bgL" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1e3c72"/><stop offset="100%" stop-color="#4a90e2"/></linearGradient>
+<linearGradient id="sunL" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffe259"/><stop offset="100%" stop-color="#ffa751"/></linearGradient>
+</defs>
+<rect x="4" y="4" width="48" height="48" rx="12" fill="url(#bgL)"/>
+<g transform="translate(20,20)">
+<circle r="10" fill="url(#sunL)"/>
+<g stroke="#ffe259" stroke-width="2" stroke-linecap="round" opacity="0.9">
+<line x1="0" y1="-14" x2="0" y2="-17"/><line x1="0" y1="14" x2="0" y2="17"/>
+<line x1="-14" y1="0" x2="-17" y2="0"/><line x1="14" y1="0" x2="17" y2="0"/>
+<line x1="-10" y1="-10" x2="-12" y2="-12"/><line x1="10" y1="10" x2="12" y2="12"/>
+<line x1="-10" y1="10" x2="-12" y2="12"/><line x1="10" y1="-10" x2="12" y2="-12"/>
+</g></g>
+<g transform="translate(36,30)" fill="#fff" opacity="0.95">
+<ellipse cx="-6" cy="3" rx="12" ry="8"/><ellipse cx="6" cy="0" rx="14" ry="10"/>
+<ellipse cx="0" cy="-4" rx="10" ry="7"/>
+</g>
+<text x="64" y="30" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="800" fill="currentColor" letter-spacing="-0.5">OMTG</text>
+<text x="64" y="46" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="500" fill="currentColor" opacity="0.75" letter-spacing="2">WEATHER</text>
+</svg>

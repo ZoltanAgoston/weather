@@ -1,0 +1,16 @@
+{
+  "name": "OMTG Weather",
+  "short_name": "OMTG Weather",
+  "description": "Időjárás jelentés - Open-Meteo + OpenStreetMap",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1e3c72",
+  "theme_color": "#2a5298",
+  "lang": "hu",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

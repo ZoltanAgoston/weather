@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+<linearGradient id="bgI" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1e3c72"/><stop offset="50%" stop-color="#2a5298"/><stop offset="100%" stop-color="#4a90e2"/></linearGradient>
+<linearGradient id="sunI" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffe259"/><stop offset="100%" stop-color="#ffa751"/></linearGradient>
+<linearGradient id="cloudI" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d6e0ec"/></linearGradient>
+</defs>
+<rect width="512" height="512" rx="96" ry="96" fill="url(#bgI)"/>
+<g transform="translate(190,190)">
+<circle r="72" fill="url(#sunI)"/>
+<g stroke="#ffe259" stroke-width="9" stroke-linecap="round" opacity="0.9">
+<line x1="0" y1="-98" x2="0" y2="-118"/><line x1="0" y1="98" x2="0" y2="118"/>
+<line x1="-98" y1="0" x2="-118" y2="0"/><line x1="98" y1="0" x2="118" y2="0"/>
+<line x1="-69" y1="-69" x2="-84" y2="-84"/><line x1="69" y1="69" x2="84" y2="84"/>
+<line x1="-69" y1="69" x2="-84" y2="84"/><line x1="69" y1="-69" x2="84" y2="-84"/>
+</g></g>
+<g transform="translate(280,300)" fill="url(#cloudI)">
+<ellipse cx="-50" cy="20" rx="80" ry="55"/><ellipse cx="40" cy="10" rx="100" ry="70"/>
+<ellipse cx="0" cy="-25" rx="75" ry="55"/><ellipse cx="-90" cy="0" rx="55" ry="40"/>
+</g>
+</svg>
