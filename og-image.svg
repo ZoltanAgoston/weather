@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+<defs>
+<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#0a0a1a"/><stop offset="50%" stop-color="#1a1a3e"/><stop offset="100%" stop-color="#16213e"/>
+</linearGradient>
+<radialGradient id="bgRad1" cx="20%" cy="20%" r="50%">
+<stop offset="0%" stop-color="rgba(120,100,255,0.35)"/><stop offset="100%" stop-color="rgba(120,100,255,0)"/>
+</radialGradient>
+<radialGradient id="bgRad2" cx="80%" cy="80%" r="50%">
+<stop offset="0%" stop-color="rgba(255,100,200,0.25)"/><stop offset="100%" stop-color="rgba(255,100,200,0)"/>
+</radialGradient>
+<radialGradient id="sun" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#ffe259"/><stop offset="100%" stop-color="#ffa751"/>
+</radialGradient>
+<linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#7c9eff"/><stop offset="100%" stop-color="#5b7fff"/>
+</linearGradient>
+<linearGradient id="text" x1="0%" y1="0%" x2="100%" y2="0%">
+<stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#a0c4ff"/>
+</linearGradient>
+</defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<rect width="1200" height="630" fill="url(#bgRad1)"/>
+<rect width="1200" height="630" fill="url(#bgRad2)"/>
+<g transform="translate(180,200)">
+<circle cx="110" cy="110" r="120" fill="url(#accent)" opacity="0.95"/>
+<g transform="translate(110,110)">
+<circle r="55" fill="url(#sun)"/>
+<g stroke="#ffe259" stroke-width="6" stroke-linecap="round" opacity="0.95">
+<line x1="0" y1="-78" x2="0" y2="-95"/><line x1="0" y1="78" x2="0" y2="95"/>
+<line x1="-78" y1="0" x2="-95" y2="0"/><line x1="78" y1="0" x2="95" y2="0"/>
+<line x1="-55" y1="-55" x2="-67" y2="-67"/><line x1="55" y1="55" x2="67" y2="67"/>
+<line x1="-55" y1="55" x2="-67" y2="67"/><line x1="55" y1="-55" x2="67" y2="-67"/>
+</g>
+</g>
+<g transform="translate(165,145)" fill="#fff" opacity="0.95">
+<ellipse cx="-15" cy="10" rx="45" ry="28"/><ellipse cx="20" cy="0" rx="55" ry="33"/>
+<ellipse cx="0" cy="-15" rx="38" ry="28"/>
+</g>
+<g transform="translate(155,225)">
+<path d="M 0,-22 C -10,-22 -14,-14 -14,-6 C -14,4 -8,12 0,22 C 8,12 14,4 14,-6 C 14,-14 10,-22 0,-22 Z" fill="#4ecdc4"/>
+</g>
+</g>
+<text x="450" y="310" font-family="system-ui,-apple-system,sans-serif" font-size="140" font-weight="800" fill="url(#text)">Időjárás</text>
+<text x="450" y="430" font-family="system-ui,-apple-system,sans-serif" font-size="56" font-weight="500" fill="url(#accent)" letter-spacing="22">OMTG</text>
+<text x="180" y="510" font-family="system-ui,-apple-system,sans-serif" font-size="30" font-weight="500" fill="rgba(255,255,255,0.9)">Valós idejű időjárás-előrejelzés · 16 nap</text>
+<text x="180" y="555" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="rgba(255,255,255,0.7)">🌡️ Hőmérséklet  💧 Eső  💨 Szél  📍 Magyar városok  🗓️ Planner + öltözet</text>
+<text x="180" y="600" font-family="system-ui,-apple-system,sans-serif" font-size="20" font-weight="600" fill="rgba(255,255,255,0.5)">idojaras.omtg.hu</text>
+</svg>
