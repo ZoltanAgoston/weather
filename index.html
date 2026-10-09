@@ -6,9 +6,9 @@
 <title>OMTG Weather</title>
 <style>
 body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#0a0a1a,#1a1a3e,#0f3460);color:#fff;min-height:100vh;padding:20px;margin:0}
-.container{max-width:600px;margin:0 auto}
+.container{max-width:1100px;margin:0 auto}
 h1{text-align:center;font-size:2rem;margin:10px 0 20px}
-.search{display:flex;gap:8px;margin:0 0 16px}
+.search{display:flex;gap:8px;margin:0 0 16px;max-width:600px;margin-left:auto;margin-right:auto}
 input{flex:1;padding:12px 16px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;border-radius:10px;font-size:1rem;outline:none}
 input:focus{border-color:#4facfe}
 button{padding:12px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,#4facfe,#5b7fff);color:#fff;font-size:1rem;font-weight:600;cursor:pointer}
@@ -34,6 +34,20 @@ button:disabled{opacity:.5}
 .mday .mday-temps{font-size:.7rem}
 .mday .mday-temps .max{font-weight:700}
 .mday .mday-precip{font-size:.65rem;opacity:.8}
+.weekly{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:16px}
+.day{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 4px;text-align:center;font-size:.75rem}
+.day.today{background:linear-gradient(135deg,#ff6b9d,#ff8aab);color:#fff;border-color:transparent}
+.day-name{font-size:.68rem;opacity:.85;font-weight:600;margin-bottom:2px}
+.day-icon{font-size:1.3rem;margin:2px 0}
+.day-temps{font-size:.68rem;margin-bottom:3px}
+.day-temps .max{font-weight:700}
+.day-times{display:flex;gap:1px;margin:3px 0;justify-content:space-between}
+.day-time{display:flex;flex-direction:column;align-items:center;gap:0;flex:1;min-width:0}
+.time-label{font-size:.48rem;opacity:.7;text-transform:uppercase;letter-spacing:.2px;font-weight:600}
+.time-icon{font-size:.8rem;line-height:1}
+.time-temp{font-size:.6rem;font-weight:700}
+.day-clothing{font-size:.5rem;opacity:.95;margin:3px 1px;padding:2px 3px;background:rgba(255,255,255,.1);border-radius:4px;line-height:1.15;font-weight:500}
+.day-precip{font-size:.6rem;opacity:.8;margin-top:2px}
 h3.section-title{font-size:1rem;margin:0 0 12px;opacity:.9}
 </style>
 </head>
@@ -52,6 +66,12 @@ h3.section-title{font-size:1rem;margin:0 0 12px;opacity:.9}
 <div class="monthly" id="monthly"></div>
 </div>
 </div>
+<div id="weeklyWrap" style="display:none">
+<div class="result" style="margin-top:16px">
+<h3 class="section-title">📅 Heti előrejelzés — reggel / dél / este + öltözet</h3>
+<div class="weekly" id="weekly"></div>
+</div>
+</div>
 </div>
 <script>
 const WMO_CODE={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌦️',82:'🌦️',95:'⛈️',96:'⛈️',99:'⛈️'};
@@ -59,12 +79,29 @@ const WMO_LABEL={0:'Tiszta',1:'Többnyire tiszta',2:'Részben felhős',3:'Borult
 
 function setStatus(m,e){const el=document.getElementById('status');el.textContent=m;el.className=e?'status error':'status'}
 
+function clothingAdvice(t,r,w){
+  const i=[];
+  if(t<0)i.push('🧣 télikabát+sapka+kesztyű+sál');
+  else if(t<5)i.push('🧥 télikabát+sapka');
+  else if(t<10)i.push('🧥 vastag kabát+pulóver');
+  else if(t<15)i.push('🧥 átmeneti kabát');
+  else if(t<20)i.push('👕 pulóver/hosszú ujjú');
+  else if(t<25)i.push('👕 póló');
+  else if(t<30)i.push('👕 póló+sok víz');
+  else i.push('👕 póló+rövidnadrág+víz+naptej');
+  if(r>0.5)i.push('☂️ esernyő');
+  if(r>2)i.push('🧥 esőkabát');
+  if(w>30)i.push('💨 szélálló');
+  return i.join(' + ');
+}
+
 async function load(){
   const city=document.getElementById('cityInput').value.trim()||'Dunaszeg';
   const btn=document.getElementById('searchBtn');
   btn.disabled=true;
   document.getElementById('result').innerHTML='';
   document.getElementById('monthlyWrap').style.display='none';
+  document.getElementById('weeklyWrap').style.display='none';
   setStatus('⏳ Betöltés: '+city+'...');
   try{
     const res=await fetch('/api/weather?city='+encodeURIComponent(city));
@@ -102,6 +139,7 @@ function render(data){
     html+='<div><span>Napnyugta</span><strong>'+new Date(w.daily.sunset[0]).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})+'</strong></div>';
     html+='</div></div>';
     document.getElementById('result').innerHTML=html;
+    // 16-day forecast
     let monthly='<div class="monthly">';
     for(let i=0;i<w.daily.time.length;i++){
       const wd=WMO_CODE[w.daily.weather_code[i]]||'🌡️';
@@ -113,6 +151,37 @@ function render(data){
     monthly+='</div>';
     document.getElementById('monthly').innerHTML=monthly;
     document.getElementById('monthlyWrap').style.display='block';
+    // 7-day weekly with 3 time slots + clothing
+    let weekly='<div class="weekly">';
+    for(let i=0;i<7&&i<w.daily.time.length;i++){
+      const wd=WMO_CODE[w.daily.weather_code[i]]||'🌡️';
+      const d=new Date(w.daily.time[i]);
+      const isToday=i===0;
+      const dayName=isToday?'Ma':(i===1?'Holnap':d.toLocaleDateString('hu-HU',{weekday:'short'}));
+      const dayDate=w.daily.time[i];
+      const findH=(h)=>{const idx=w.hourly.time.findIndex(t=>t.startsWith(dayDate+'T'+String(h).padStart(2,'0')));return idx};
+      const mI=findH(8),nI=findH(12),eI=findH(18);
+      const morning=mI!==-1?{icon:WMO_CODE[w.hourly.weather_code[mI]]||wd,temp:Math.round(w.hourly.temperature_2m[mI])}:{icon:wd,temp:Math.round(w.daily.temperature_2m_min[i])};
+      const noon=nI!==-1?{icon:WMO_CODE[w.hourly.weather_code[nI]]||wd,temp:Math.round(w.hourly.temperature_2m[nI])}:{icon:wd,temp:Math.round(w.daily.temperature_2m_max[i])};
+      const evening=eI!==-1?{icon:WMO_CODE[w.hourly.weather_code[eI]]||wd,temp:Math.round(w.hourly.temperature_2m[eI])}:{icon:'🌙',temp:Math.round((w.daily.temperature_2m_max[i]+w.daily.temperature_2m_min[i])/2)};
+      const wsmax=w.daily.wind_speed_10m_max?w.daily.wind_speed_10m_max[i]:0;
+      const cloth=clothingAdvice(w.daily.temperature_2m_max[i],w.daily.precipitation_sum[i]||0,wsmax);
+      weekly+='<div class="day'+(isToday?' today':'')+'">';
+      weekly+='<div class="day-name">'+dayName+'</div>';
+      weekly+='<div class="day-icon">'+wd+'</div>';
+      weekly+='<div class="day-temps"><span class="max">'+Math.round(w.daily.temperature_2m_max[i])+'°</span> '+Math.round(w.daily.temperature_2m_min[i])+'°</div>';
+      weekly+='<div class="day-times">';
+      weekly+='<div class="day-time"><span class="time-label">reggel</span><span class="time-icon">'+morning.icon+'</span><span class="time-temp">'+morning.temp+'°</span></div>';
+      weekly+='<div class="day-time"><span class="time-label">dél</span><span class="time-icon">'+noon.icon+'</span><span class="time-temp">'+noon.temp+'°</span></div>';
+      weekly+='<div class="day-time"><span class="time-label">este</span><span class="time-icon">'+evening.icon+'</span><span class="time-temp">'+evening.temp+'°</span></div>';
+      weekly+='</div>';
+      weekly+='<div class="day-clothing">'+cloth+'</div>';
+      weekly+='<div class="day-precip">💧 '+(w.daily.precipitation_sum[i]||0).toFixed(1)+'mm</div>';
+      weekly+='</div>';
+    }
+    weekly+='</div>';
+    document.getElementById('weekly').innerHTML=weekly;
+    document.getElementById('weeklyWrap').style.display='block';
   }catch(e){
     console.error('Render:',e);
     document.getElementById('result').innerHTML='<div class="result"><h2>⚠️ Render hiba</h2><p>'+e.message+'</p></div>';
