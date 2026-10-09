@@ -206,6 +206,7 @@ async function load(){
     const data=await res.json();
     if(data.error)throw new Error(data.error);
     lastWeatherData=data;
+    document.getElementById("content").classList.remove("hidden");
     render(data);
     setStatus('✅ '+new Date().toLocaleTimeString('hu-HU'));
   }catch(e){
@@ -244,6 +245,7 @@ function render(data){
     document.getElementById('plannerResult').innerHTML='';
   }catch(e){
     console.error('Render:',e);
+    document.getElementById('summary').innerHTML='<div class="card"><h2>⚠️ Render hiba</h2><p style="opacity:.8;margin:8px 0">' +e.message+ '</p><p style="font-size:.8rem;opacity:.6">F12 → Console a részletekért.</p></div>';
   }
 }
 
