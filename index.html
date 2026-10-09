@@ -25,6 +25,16 @@ button:disabled{opacity:.5}
 .stats>div{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:10px;border-radius:8px;text-align:center}
 .stats span{font-size:.7rem;opacity:.7;text-transform:uppercase;letter-spacing:.5px;display:block}
 .stats strong{font-size:1.1rem;display:block;margin-top:4px}
+.monthly{display:flex;gap:6px;overflow-x:auto;padding:8px 4px;scrollbar-width:thin}
+.monthly::-webkit-scrollbar{height:6px}
+.mday{flex:0 0 60px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 4px;text-align:center;font-size:.8rem}
+.mday.today{background:linear-gradient(135deg,#ff6b9d,#ff8aab);color:#fff;border-color:transparent}
+.mday .mday-date{font-size:.65rem;opacity:.8;font-weight:600}
+.mday .mday-icon{font-size:1.2rem;margin:2px 0}
+.mday .mday-temps{font-size:.7rem}
+.mday .mday-temps .max{font-weight:700}
+.mday .mday-precip{font-size:.65rem;opacity:.8}
+h3.section-title{font-size:1rem;margin:0 0 12px;opacity:.9}
 </style>
 </head>
 <body>
@@ -36,6 +46,12 @@ button:disabled{opacity:.5}
 </div>
 <div id="status"></div>
 <div id="result"></div>
+<div id="monthlyWrap" style="display:none">
+<div class="result" style="margin-top:16px">
+<h3 class="section-title">📆 16 napos előrejelzés</h3>
+<div class="monthly" id="monthly"></div>
+</div>
+</div>
 </div>
 <script>
 const WMO_CODE={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌦️',82:'🌦️',95:'⛈️',96:'⛈️',99:'⛈️'};
@@ -48,6 +64,7 @@ async function load(){
   const btn=document.getElementById('searchBtn');
   btn.disabled=true;
   document.getElementById('result').innerHTML='';
+  document.getElementById('monthlyWrap').style.display='none';
   setStatus('⏳ Betöltés: '+city+'...');
   try{
     const res=await fetch('/api/weather?city='+encodeURIComponent(city));
@@ -59,7 +76,7 @@ async function load(){
   }catch(e){
     console.error('Load:',e);
     setStatus('❌ '+e.message,true);
-    document.getElementById('result').innerHTML='<div class="result"><h2>⚠️ '+e.message+'</h2><p>Próbáld újra, vagy válassz másik várost.</p></div>';
+    document.getElementById('result').innerHTML='<div class="result"><h2>⚠️ '+e.message+'</h2><p>Próbáld újra.</p></div>';
   }
   btn.disabled=false;
 }
@@ -85,6 +102,17 @@ function render(data){
     html+='<div><span>Napnyugta</span><strong>'+new Date(w.daily.sunset[0]).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})+'</strong></div>';
     html+='</div></div>';
     document.getElementById('result').innerHTML=html;
+    let monthly='<div class="monthly">';
+    for(let i=0;i<w.daily.time.length;i++){
+      const wd=WMO_CODE[w.daily.weather_code[i]]||'🌡️';
+      const d=new Date(w.daily.time[i]);
+      const isToday=i===0;
+      const lbl=isToday?'Ma':(i===1?'Holnap':d.toLocaleDateString('hu-HU',{weekday:'short',day:'numeric'}));
+      monthly+='<div class="mday'+(isToday?' today':'')+'"><div class="mday-date">'+lbl+'</div><div class="mday-icon">'+wd+'</div><div class="mday-temps"><span class="max">'+Math.round(w.daily.temperature_2m_max[i])+'°</span> '+Math.round(w.daily.temperature_2m_min[i])+'°</div><div class="mday-precip">💧 '+(w.daily.precipitation_sum[i]||0).toFixed(1)+'mm</div></div>';
+    }
+    monthly+='</div>';
+    document.getElementById('monthly').innerHTML=monthly;
+    document.getElementById('monthlyWrap').style.display='block';
   }catch(e){
     console.error('Render:',e);
     document.getElementById('result').innerHTML='<div class="result"><h2>⚠️ Render hiba</h2><p>'+e.message+'</p></div>';
