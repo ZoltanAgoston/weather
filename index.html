@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Időjárás jelentés — OMTG</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;color:#fff;transition:background 1s ease;padding-bottom:24px}
+body.sunny{background:linear-gradient(135deg,#f6d365 0%,#fda085 100%);color:#333}
+body.cloudy{background:linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)}
+body.rainy{background:linear-gradient(135deg,#4b6cb7 0%,#182848 100%)}
+body.snowy{background:linear-gradient(135deg,#e6dada 0%,#8a8a8a 100%);color:#333}
+body.stormy{background:linear-gradient(135deg,#232526 0%,#414345 100%)}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+header{text-align:center;margin-bottom:32px}
+h1{font-size:2.4rem;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.subtitle{opacity:0.85;margin-bottom:20px;font-size:0.95rem}
+#searchForm{display:flex;gap:8px;max-width:520px;margin:0 auto}
+#cityInput{flex:1;padding:14px 18px;border:none;border-radius:10px;font-size:1rem;outline:none;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+#searchForm button{padding:14px 24px;border:none;border-radius:10px;background:rgba(255,255,255,0.2);color:inherit;font-size:1rem;font-weight:600;cursor:pointer;transition:background 0.2s;backdrop-filter:blur(10px)}
+#searchForm button:hover{background:rgba(255,255,255,0.3)}
+#searchForm button:disabled{opacity:0.5;cursor:wait}
+#status{margin-top:14px;min-height:20px;font-size:0.9rem;text-align:center}
+.error{color:#ffcccc;font-weight:600}
+.hidden{display:none}
+.current{display:grid;grid-template-columns:1fr 1.2fr;gap:32px;background:rgba(255,255,255,0.12);backdrop-filter:blur(12px);padding:32px;border-radius:20px;margin-bottom:24px;box-shadow:0 8px 32px rgba(0,0,0,0.15)}
+body.sunny .current,body.snowy .current{background:rgba(255,255,255,0.45)}
+.current-main{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.current-main .icon{font-size:7rem;line-height:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.2))}
+.current-main .temp{font-size:5.5rem;font-weight:800;line-height:1;margin-top:8px}
+.current-info h2{font-size:1.9rem;margin-bottom:4px}
+.current-info .country{font-size:0.95rem;opacity:0.8;margin-bottom:14px}
+.current-info .cond{font-size:1.2rem;margin-bottom:20px;opacity:0.95}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stats>div{background:rgba(255,255,255,0.15);padding:12px;border-radius:10px}
+body.sunny .stats>div,body.snowy .stats>div{background:rgba(255,255,255,0.5)}
+.stats span{opacity:0.75;font-size:0.8rem;text-transform:uppercase;letter-spacing:0.5px}
+.stats strong{display:block;font-size:1.15rem;margin-top:4px;font-weight:700}
+section.chart-section{background:rgba(255,255,255,0.12);backdrop-filter:blur(12px);padding:24px;border-radius:20px;margin-bottom:24px;box-shadow:0 8px 32px rgba(0,0,0,0.15)}
+body.sunny section.chart-section,body.snowy section.chart-section{background:rgba(255,255,255,0.45)}
+section h3{margin-bottom:16px;font-size:1.15rem;font-weight:600}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{background:rgba(255,255,255,0.1);padding:14px 8px;border-radius:12px;text-align:center;transition:transform 0.2s}
+.day:hover{transform:translateY(-3px)}
+body.sunny .day,body.snowy .day{background:rgba(255,255,255,0.4)}
+.day-name{font-size:0.85rem;opacity:0.8;text-transform:uppercase;font-weight:600}
+.day-icon{font-size:2.2rem;margin:6px 0}
+.day-temps{font-size:0.95rem}
+.day-temps .max{font-weight:700}
+.day-temps .min{opacity:0.65}
+.day-precip{font-size:0.8rem;opacity:0.85;margin-top:6px}
+@media(max-width:768px){.current{grid-template-columns:1fr;gap:16px;padding:20px}.current-main .icon{font-size:5rem}.current-main .temp{font-size:4rem}.days{grid-template-columns:repeat(4,1fr)}.stats{grid-template-columns:1fr 1fr}h1{font-size:1.8rem}}
+@media(max-width:480px){.days{grid-template-columns:repeat(3,1fr)}}
+footer{text-align:center;padding:24px 0 0;font-size:0.85rem;opacity:0.8}
+footer a{color:inherit;text-decoration:underline}
+.quick-cities{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto}
+.quick-cities button{padding:6px 12px;border-radius:20px;background:rgba(255,255,255,0.15);color:inherit;border:1px solid rgba(255,255,255,0.2);font-size:0.8rem;cursor:pointer;transition:background 0.2s}
+.quick-cities button:hover{background:rgba(255,255,255,0.3)}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🌤️ Időjárás jelentés</h1>
+    <p class="subtitle">Open-Meteo + OpenStreetMap · OMTG public-apis integráció</p>
+    <form id="searchForm">
+      <input type="text" id="cityInput" placeholder="Város neve (pl. Budapest)" value="Budapest" required autocomplete="off">
+      <button type="submit" id="submitBtn">🔍 Keresés</button>
+    </form>
+    <div class="quick-cities">
+      <button data-city="Budapest">Budapest</button>
+      <button data-city="Debrecen">Debrecen</button>
+      <button data-city="Szeged">Szeged</button>
+      <button data-city="Pécs">Pécs</button>
+      <button data-city="Győr">Győr</button>
+      <button data-city="Miskolc">Miskolc</button>
+      <button data-city="Vienna">Bécs</button>
+      <button data-city="Berlin">Berlin</button>
+    </div>
+    <div id="status" class="status"></div>
+  </header>
+  <main id="content" class="hidden">
+    <section class="current">
+      <div class="current-main">
+        <div class="icon" id="currentIcon">☀️</div>
+        <div class="temp" id="currentTemp">--°</div>
+      </div>
+      <div class="current-info">
+        <h2 id="cityName">--</h2>
+        <p class="country" id="country">--</p>
+        <p class="cond" id="condition">--</p>
+        <div class="stats">
+          <div><span>Érzet</span><strong id="feelsLike">--°</strong></div>
+          <div><span>Pára</span><strong id="humidity">--%</strong></div>
+          <div><span>Szél</span><strong id="wind">--</strong></div>
+          <div><span>Légnyomás</span><strong id="pressure">--</strong></div>
+          <div><span>Napkelte</span><strong id="sunrise">--:--</strong></div>
+          <div><span>Napnyugta</span><strong id="sunset">--:--</strong></div>
+        </div>
+      </div>
+    </section>
+    <section class="chart-section">
+      <h3>📈 24 órás hőmérséklet és csapadék esély</h3>
+      <canvas id="tempChart"></canvas>
+    </section>
+    <section class="chart-section">
+      <h3>📅 7 napos előrejelzés</h3>
+      <div class="days" id="days"></div>
+    </section>
+    <section class="chart-section">
+      <h3>🌧️ 7 napos csapadék összeg</h3>
+      <canvas id="precipChart"></canvas>
+    </section>
+  </main>
+  <footer>
+    Adatok: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener">OpenStreetMap Nominatim</a> · OMTG public-apis integráció
+  </footer>
+</div>
+<script>
+const WMO = {
+  0:{icon:'☀️',label:'Tiszta ég',cls:'sunny'},
+  1:{icon:'🌤️',label:'Többnyire tiszta',cls:'sunny'},
+  2:{icon:'⛅',label:'Részben felhős',cls:'cloudy'},
+  3:{icon:'☁️',label:'Borult',cls:'cloudy'},
+  45:{icon:'🌫️',label:'Köd',cls:'cloudy'},
+  48:{icon:'🌫️',label:'Zúzmarás köd',cls:'cloudy'},
+  51:{icon:'🌦️',label:'Gyenge szitálás',cls:'rainy'},
+  53:{icon:'🌦️',label:'Szitálás',cls:'rainy'},
+  55:{icon:'🌦️',label:'Erős szitálás',cls:'rainy'},
+  56:{icon:'🌧️',label:'Jeges szitálás',cls:'rainy'},
+  57:{icon:'🌧️',label:'Erős jeges szitálás',cls:'rainy'},
+  61:{icon:'🌧️',label:'Gyenge eső',cls:'rainy'},
+  63:{icon:'🌧️',label:'Eső',cls:'rainy'},
+  65:{icon:'🌧️',label:'Erős eső',cls:'rainy'},
+  66:{icon:'🌧️',label:'Jeges eső',cls:'rainy'},
+  67:{icon:'🌧️',label:'Erős jeges eső',cls:'rainy'},
+  71:{icon:'❄️',label:'Gyenge havazás',cls:'snowy'},
+  73:{icon:'❄️',label:'Havazás',cls:'snowy'},
+  75:{icon:'❄️',label:'Erős havazás',cls:'snowy'},
+  77:{icon:'❄️',label:'Hószemcsék',cls:'snowy'},
+  80:{icon:'🌦️',label:'Gyenge zápor',cls:'rainy'},
+  81:{icon:'🌦️',label:'Zápor',cls:'rainy'},
+  82:{icon:'🌦️',label:'Erős zápor',cls:'rainy'},
+  85:{icon:'🌨️',label:'Hózápor',cls:'snowy'},
+  86:{icon:'🌨️',label:'Erős hózápor',cls:'snowy'},
+  95:{icon:'⛈️',label:'Zivatar',cls:'stormy'},
+  96:{icon:'⛈️',label:'Jéges zivatar',cls:'stormy'},
+  99:{icon:'⛈️',label:'Erős jéges zivatar',cls:'stormy'}
+};
+let tempChart, precipChart;
+function setStatus(m, e=false){const el=document.getElementById('status');el.textContent=m;el.className=e?'status error':'status'}
+function setBody(c){const w=WMO[c]||WMO[0];document.body.className=w.cls}
+async function geocode(city){
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city)}&accept-language=hu`,{headers:{'Accept-Language':'hu'}});
+  if(!r.ok)throw new Error('Geocoding hiba ('+r.status+')');
+  const d=await r.json();
+  if(!d.length)throw new Error('Nem találom: '+city);
+  return{lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon),display:d[0].display_name};
+}
+async function weather(lat,lon){
+  const p=new URLSearchParams({latitude:lat,longitude:lon,current:'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,surface_pressure',hourly:'temperature_2m,precipitation_probability,weather_code',daily:'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum',timezone:'auto',forecast_days:7});
+  const r=await fetch('https://api.open-meteo.com/v1/forecast?'+p);
+  if(!r.ok)throw new Error('Open-Meteo hiba ('+r.status+')');
+  return r.json();
+}
+function fmtTime(iso){return new Date(iso).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}
+function fmtDay(iso){return new Date(iso).toLocaleDateString('hu-HU',{weekday:'short'})}
+function render(d,placeName){
+  const c=d.current;const w=WMO[c.weather_code]||WMO[0];
+  setBody(c.weather_code);
+  document.getElementById('content').classList.remove('hidden');
+  document.getElementById('currentIcon').textContent=w.icon;
+  document.getElementById('currentTemp').textContent=Math.round(c.temperature_2m)+'°C';
+  const parts=placeName.split(',');
+  document.getElementById('cityName').textContent=parts[0];
+  document.getElementById('country').textContent=parts.slice(1).join(',').trim();
+  document.getElementById('condition').textContent=w.label;
+  document.getElementById('feelsLike').textContent=Math.round(c.apparent_temperature)+'°C';
+  document.getElementById('humidity').textContent=c.relative_humidity_2m+'%';
+  document.getElementById('wind').textContent=Math.round(c.wind_speed_10m)+' km/h';
+  document.getElementById('pressure').textContent=Math.round(c.surface_pressure)+' hPa';
+  document.getElementById('sunrise').textContent=fmtTime(d.daily.sunrise[0]);
+  document.getElementById('sunset').textContent=fmtTime(d.daily.sunset[0]);
+  const now=new Date();
+  const startIdx=d.hourly.time.findIndex(t=>new Date(t)>=now);
+  const s=arr=>arr.slice(startIdx,startIdx+24);
+  const l24=s(d.hourly.time).map(t=>new Date(t).toLocaleTimeString('hu-HU',{hour:'2-digit'}));
+  const t24=s(d.hourly.temperature_2m);
+  const p24=s(d.hourly.precipitation_probability);
+  if(tempChart)tempChart.destroy();
+  tempChart=new Chart(document.getElementById('tempChart'),{type:'line',data:{labels:l24,datasets:[{label:'Hőmérséklet (°C)',data:t24,borderColor:'#ff6b6b',backgroundColor:'rgba(255,107,107,0.2)',tension:0.4,fill:true,yAxisID:'y'},{label:'Csapadék esély (%)',data:p24,borderColor:'#4ecdc4',backgroundColor:'rgba(78,205,196,0.2)',tension:0.4,fill:false,yAxisID:'y1'}]},options:{responsive:true,interaction:{mode:'index',intersect:false},scales:{y:{type:'linear',position:'left',title:{display:true,text:'°C'}},y1:{type:'linear',position:'right',min:0,max:100,title:{display:true,text:'%'},grid:{drawOnChartArea:false}}}}});
+  const daysEl=document.getElementById('days');daysEl.innerHTML='';
+  for(let i=0;i<7;i++){
+    const wd=WMO[d.daily.weather_code[i]]||WMO[0];
+    const div=document.createElement('div');div.className='day';
+    div.innerHTML=`<div class="day-name">${i===0?'Ma':fmtDay(d.daily.time[i])}</div><div class="day-icon">${wd.icon}</div><div class="day-temps"><span class="max">${Math.round(d.daily.temperature_2m_max[i])}°</span> / <span class="min">${Math.round(d.daily.temperature_2m_min[i])}°</span></div><div class="day-precip">💧 ${d.daily.precipitation_sum[i].toFixed(1)} mm</div>`;
+    daysEl.appendChild(div);
+  }
+  if(precipChart)precipChart.destroy();
+  precipChart=new Chart(document.getElementById('precipChart'),{type:'bar',data:{labels:d.daily.time.map((t,i)=>i===0?'Ma':fmtDay(t)),datasets:[{label:'Csapadék (mm)',data:d.daily.precipitation_sum,backgroundColor:'rgba(78,205,196,0.6)',borderColor:'#4ecdc4',borderWidth:2}]},options:{responsive:true,scales:{y:{beginAtZero:true,title:{display:true,text:'mm'}}}}});
+}
+async function search(city){
+  const btn=document.getElementById('submitBtn');btn.disabled=true;
+  document.getElementById('content').classList.add('hidden');
+  try{
+    setStatus('📍 "'+city+'" keresése...');
+    const g=await geocode(city);
+    setStatus('🌐 '+g.display+' → időjárás lekérés...');
+    const w=await weather(g.lat,g.lon);
+    setStatus('✅ Frissítve: '+new Date().toLocaleString('hu-HU'));
+    render(w,g.display);
+  }catch(e){setStatus('❌ '+e.message,true)}
+  finally{btn.disabled=false}
+}
+document.getElementById('searchForm').addEventListener('submit',e=>{e.preventDefault();const c=document.getElementById('cityInput').value.trim();if(c)search(c)});
+document.querySelectorAll('.quick-cities button').forEach(b=>b.addEventListener('click',()=>{document.getElementById('cityInput').value=b.dataset.city;search(b.dataset.city)}));
+window.addEventListener('load',()=>search('Budapest'));
+</script>
+</body>
+</html>
