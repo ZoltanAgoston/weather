@@ -4,6 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OMTG Weather</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<meta name="description" content="OMTG Weather - valós idejű 16 napos időjárás-előrejelzés magyar városokra. Heti nézet, Planner, öltözet javaslat.">
+<meta name="keywords" content="időjárás, weather, OMTG, előrejelzés, Dunaszeg, Győr, Budapest, PWA">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OMTG Weather">
+<meta property="og:description" content="Valós idejű 16 napos időjárás-előrejelzés">
+<meta property="og:image" content="https://idojaras.omtg.hu/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OMTG Weather">
+<meta name="twitter:description" content="Valós idejű 16 napos időjárás-előrejelzés">
+<meta name="twitter:image" content="https://idojaras.omtg.hu/og-image.png">
+<link rel="canonical" href="https://idojaras.omtg.hu/">
 <style>
 body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#0a0a1a,#1a1a3e,#0f3460);color:#fff;min-height:100vh;padding:20px;margin:0}
 .container{max-width:1100px;margin:0 auto}
@@ -49,6 +61,27 @@ button:disabled{opacity:.5}
 .day-clothing{font-size:.5rem;opacity:.95;margin:3px 1px;padding:2px 3px;background:rgba(255,255,255,.1);border-radius:4px;line-height:1.15;font-weight:500}
 .day-precip{font-size:.6rem;opacity:.8;margin-top:2px}
 h3.section-title{font-size:1rem;margin:0 0 12px;opacity:.9}
+.chart-container{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px;margin-top:16px}
+.planner-form{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.planner-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.planner-row.two{grid-template-columns:1fr 1fr}
+.planner-row label{font-size:.7rem;opacity:.75;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.planner-row input,.planner-row select{padding:9px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-size:.9rem;outline:none}
+#planBtn{padding:11px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,#4facfe,#5b7fff);color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:6px}
+#planBtn:disabled{opacity:.5}
+.planner-headline{font-size:1.05rem;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.12)}
+.planner-weather{margin:8px 0 12px;opacity:.95}
+.planner-advice ul{margin:6px 0 0;padding-left:22px}
+.planner-advice li{margin:3px 0}
+.warning{background:rgba(255,180,50,.12);border:1px solid rgba(255,180,50,.4);padding:10px 12px;border-radius:8px;font-size:.88rem;margin:8px 0;display:flex;align-items:center;gap:8px}
+.default-loc-btn{padding:7px 14px;border-radius:20px;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.14);font-size:.78rem;cursor:pointer;margin:10px auto 0;display:block;backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);font-weight:600}
+.default-loc-btn:hover{background:rgba(255,255,255,.14)}
+footer{text-align:center;padding:20px 16px 0;font-size:.8rem;opacity:.6;margin-top:20px}
+footer .build{font-family:monospace;padding:2px 6px;background:rgba(255,255,255,.08);border-radius:4px;font-size:.72rem;border:1px solid rgba(255,255,255,.12)}
+.quick-cities{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:700px;margin:0 auto}
+.quick-cities button{padding:5px 10px;border-radius:20px;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.14);font-size:.72rem;cursor:pointer}
+.quick-cities button.active{background:linear-gradient(135deg,#4facfe,#5b7fff);border-color:transparent}
+
 </style>
 </head>
 <body>
@@ -58,6 +91,31 @@ h3.section-title{font-size:1rem;margin:0 0 12px;opacity:.9}
 <input type="text" id="cityInput" value="Dunaszeg" placeholder="Város neve..." autocomplete="off">
 <button id="searchBtn" type="submit">🔍</button>
 </div>
+<div id="chartWrap" class="hidden">
+<div class="result">
+<h3 class="section-title">📈 24 órás előrejelzés</h3>
+<div class="chart-container"><canvas id="chartCanvas"></canvas></div>
+</div>
+</div>
+<div id="plannerWrap" class="hidden">
+<div class="result">
+<h3 class="section-title">🗓️ Tervező — személyre szabott</h3>
+<form id="plannerForm" class="planner-form" onsubmit="return false">
+<div class="planner-row">
+<div><label>Dátum</label><input type="date" id="planDate" required></div>
+<div><label>Kezdés</label><input type="time" id="planTime" value="09:00" required></div>
+<div><label>Tartam (óra)</label><input type="number" id="planDuration" min="1" max="16" value="6"></div>
+</div>
+<div class="planner-row two">
+<div><label>Közlekedés</label><select id="planTransport"><option value="car">🚗 Autó</option><option value="bus">🚌 Busz</option><option value="train">🚆 Vonat</option><option value="plane">✈️ Repülő</option><option value="bike">🚲 Kerékpár</option><option value="walk">🚶 Gyalog</option><option value="motor">🏍️ Motor</option></select></div>
+<div><label>Tevékenység</label><select id="planActivity"><option value="séta">🚶 Séta</option><option value="túra">🥾 Túra</option><option value="piknik">🧺 Piknik</option><option value="sport">⚽ Sport</option><option value="fotó">📸 Fotózás</option><option value="kert">🌱 Kertészkedés</option><option value="strand">🏖️ Strand</option><option value="város">🏛️ Városnézés</option><option value="üzleti">💼 Üzleti út</option></select></div>
+</div>
+<button type="button" id="planBtn" onclick="runPlanner()">🗓️ Tervezés</button>
+</form>
+<div id="plannerResult"></div>
+</div>
+</div>
+<button class="default-loc-btn" id="defaultLocBtn" onclick="toggleDefaultLocation()">📍 Alap: <span id="defaultLocText">Dunaszeg</span></button>
 <div id="status"></div>
 <div id="result"></div>
 <div id="monthlyWrap" style="display:none">
@@ -73,6 +131,7 @@ h3.section-title{font-size:1rem;margin:0 0 12px;opacity:.9}
 </div>
 </div>
 </div>
+<footer>OMTG Weather <span class="build">v2.0 · STEP 4-8</span><br><span style="font-size:.7rem;opacity:.7">Adatok: <a href="https://open-meteo.com/" target="_blank" style="color:inherit">Open-Meteo</a> · <a href="https://nominatim.openstreetmap.org/" target="_blank" style="color:inherit">OpenStreetMap</a></span></footer>
 <script>
 const WMO_CODE={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌦️',82:'🌦️',95:'⛈️',96:'⛈️',99:'⛈️'};
 const WMO_LABEL={0:'Tiszta',1:'Többnyire tiszta',2:'Részben felhős',3:'Borult',45:'Köd',48:'Köd',51:'Szitálás',53:'Szitálás',55:'Szitálás',61:'Eső',63:'Eső',65:'Erős eső',71:'Hó',73:'Hó',75:'Erős hó',80:'Zápor',81:'Zápor',82:'Erős zápor',95:'Zivatar',96:'Jéges zivatar',99:'Erős jéges zivatar'};
