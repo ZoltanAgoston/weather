@@ -329,19 +329,7 @@ function renderQuickCities(){
   c.innerHTML=CITIES.map(x=>'<button data-city="'+x+'">'+x+'</button>').join('');
   c.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{document.getElementById('cityInput').value=b.dataset.city;c.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');search(b.dataset.city)}));
 }
-async function geocode(city){
-  const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(city)+'&accept-language=hu',{headers:{'Accept-Language':'hu'}});
-  if(!r.ok)throw new Error('Geocoding hiba ('+r.status+')');
-  const d=await r.json();
-  if(!d.length)throw new Error('Nem találom: '+city);
-  return{lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon),display:d[0].display_name};
-}
-async function weather(lat,lon){
-  const p=new URLSearchParams({latitude:lat,longitude:lon,current:'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,surface_pressure',hourly:'temperature_2m,precipitation_probability,precipitation,weather_code',daily:'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,wind_speed_10m_max',timezone:'auto',forecast_days:16});
-  const r=await fetch('https://api.open-meteo.com/v1/forecast?'+p);
-  if(!r.ok)throw new Error('Open-Meteo hiba ('+r.status+')');
-  return r.json();
-}
+async function getWeatherData(city){const r=await fetch('/api/weather?city='+encodeURIComponent(city));if(!r.ok)throw new Error('Szerver hiba ('+r.status+')');const j=await r.json();if(j.error)throw new Error(j.error);return j}
 function fmtTime(iso){return new Date(iso).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}
 function fmtDay(iso){return new Date(iso).toLocaleDateString('hu-HU',{weekday:'short'})}
 function fmtDate(iso){const d=new Date(iso);return d.toLocaleDateString('hu-HU',{day:'numeric',month:'short'})}
@@ -532,13 +520,15 @@ async function search(city){
   const btn=document.getElementById('submitBtn');btn.disabled=true;
   document.getElementById('content').classList.add('hidden');
   try{
-    setStatus('📍 "'+city+'" keresése...');
-    const g=await geocode(city);
-    setStatus('🌐 '+g.display+' → adatok lekérése...');
-    const w=await weather(g.lat,g.lon);
+    setStatus('📍 "'+city+'" betöltése...');
+    const data=await getWeatherData(city);
     setStatus('✅ Frissítve: '+new Date().toLocaleString('hu-HU'));
-    render(w,g.display);
-  }catch(e){setStatus('❌ '+e.message,true)}
+    render(data.weather,data.geo.display);
+  }catch(e){
+    setStatus('❌ '+e.message,true);
+    document.getElementById('content').classList.remove('hidden');
+    document.getElementById('content').innerHTML='<div class="card" style="text-align:center;padding:40px"><h2>⚠️ Hiba</h2><p style="opacity:.8;margin:12px 0">' +e.message+ '</p><button onclick="search(document.getElementById(\'cityInput\').value.trim()||\'Dunaszeg\')" style="padding:10px 24px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--accent),#5b7fff);color:#fff;font-size:1rem;font-weight:700;cursor:pointer;margin-top:8px">🔄 Újrapróbálkozás</button></div>';
+  }
   finally{btn.disabled=false}
 }
 document.getElementById('searchForm').addEventListener('submit',e=>{e.preventDefault();const c=document.getElementById('cityInput').value.trim();if(c)search(c)});
