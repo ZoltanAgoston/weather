@@ -248,13 +248,24 @@ function render(data){
 }
 
 function loadChart(w){
-  const now=new Date();const startIdx=w.hourly.time.findIndex(t=>new Date(t)>=now);
+  const now=new Date();
+  const startIdx=w.hourly.time.findIndex(t=>new Date(t)>=now);
   const s=arr=>arr.slice(startIdx,startIdx+24);
   const labels=s(w.hourly.time).map(t=>new Date(t).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'}));
-  const temps=s(w.hourly.temperature_2m),rains=s(w.hourly.precipitation);
+  const temps=s(w.hourly.temperature_2m);
+  const rains=s(w.hourly.precipitation);
   const tc=getComputedStyle(document.body).getPropertyValue('--text').trim()||'#fff';
   if(chartInstance)chartInstance.destroy();
-  chartInstance=new Chart(document.getElementById('chartCanvas'),{type:'line',data:{labels,datasets:[{label:'°C',data:temps,borderColor:'#ff6b9d',backgroundColor:'rgba(255,107,157,.2)',tension:.4,fill:true,yAxisID:'y',pointRadius:0},{label:'mm',data:rains,borderColor:'#4ecdc4',backgroundColor:'rgba(78,205,196,.4)',type:'bar',yAxisID:'y1',pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:tc}},tooltip:{backgroundColor:'rgba(15,25,45,0.95)',cornerRadius:12,padding:10,callbacks:{title:(i)=>'🕐 '+i[0].label,label:(i)=>(i.dataset.yAxisID==='y'?'🌡️ '+Math.round(i.raw)+'°C':'💧 '+i.raw.toFixed(1)+' mm'}}}},scales:{x:{ticks:{color:tc}},y:{position:'left',title:{display:true,text:'°C',color:tc},ticks:{color:tc}},y1:{position:'right',min:0,title:{display:true,text:'mm',color:tc},ticks:{color:tc}}}}});
+  chartInstance=new Chart(document.getElementById('chartCanvas'),{
+    type:'line',
+    data:{labels:labels,datasets:[
+      {label:'°C',data:temps,borderColor:'#ff6b9d',backgroundColor:'rgba(255,107,157,0.2)',tension:0.4,fill:true,yAxisID:'y',pointRadius:0},
+      {label:'mm',data:rains,borderColor:'#4ecdc4',backgroundColor:'rgba(78,205,196,0.4)',yAxisID:'y1',pointRadius:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc}},tooltip:{backgroundColor:'rgba(15,25,45,0.95)'}},scales:{x:{ticks:{color:tc}},y:{position:'left',ticks:{color:tc}},y1:{position:'right',min:0,ticks:{color:tc}}}}
+  });
+  document.getElementById('chartCard').style.display='block';
+});
   document.getElementById('chartCard').style.display='block';
 }
 
