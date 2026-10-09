@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OMTG Weather</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<meta name="theme-color" content="#0a0a1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="OMTG Weather">
 <meta name="description" content="OMTG Weather - valós idejű 16 napos időjárás-előrejelzés magyar városokra. Heti nézet, Planner, öltözet javaslat.">
 <meta name="keywords" content="időjárás, weather, OMTG, előrejelzés, Dunaszeg, Győr, Budapest, PWA">
 <meta property="og:type" content="website">
@@ -16,91 +17,138 @@
 <meta name="twitter:description" content="Valós idejű 16 napos időjárás-előrejelzés">
 <meta name="twitter:image" content="https://idojaras.omtg.hu/og-image.png">
 <link rel="canonical" href="https://idojaras.omtg.hu/">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<title>OMTG Weather</title>
 <style>
 body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#0a0a1a,#1a1a3e,#0f3460);color:#fff;min-height:100vh;padding:20px;margin:0}
-.container{max-width:1100px;margin:0 auto}
-h1{text-align:center;font-size:2rem;margin:10px 0 20px}
-.search{display:flex;gap:8px;margin:0 0 16px;max-width:600px;margin-left:auto;margin-right:auto}
-input{flex:1;padding:12px 16px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;border-radius:10px;font-size:1rem;outline:none}
-input:focus{border-color:#4facfe}
-button{padding:12px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,#4facfe,#5b7fff);color:#fff;font-size:1rem;font-weight:600;cursor:pointer}
+.container{max-width:1200px;margin:0 auto}
+h1{text-align:center;font-size:1.8rem;margin:0 0 8px}
+.subtitle{text-align:center;opacity:.7;font-size:.8rem;margin:0 0 16px}
+.search{display:flex;gap:8px;max-width:500px;margin:0 auto 12px}
+input[type=text]{flex:1;padding:10px 14px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;border-radius:10px;font-size:.95rem;outline:none;font-family:inherit}
+input[type=text]:focus{border-color:#4facfe}
+button{padding:10px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#4facfe,#5b7fff);color:#fff;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit}
 button:disabled{opacity:.5}
-#status{text-align:center;margin:8px 0 16px;min-height:20px;opacity:.9;font-size:.9rem}
-.error{color:#ff6b9d;font-weight:600}
+.quick-cities{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;max-width:700px;margin:0 auto 8px}
+.quick-cities button{padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.14);font-size:.7rem;cursor:pointer}
+.quick-cities button.active{background:linear-gradient(135deg,#ff6b9d,#ff8aab);border-color:transparent}
+.default-loc-btn{padding:6px 14px;border-radius:20px;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.14);font-size:.75rem;cursor:pointer;margin:0 auto 12px;display:block}
+#status{text-align:center;margin:0 0 12px;min-height:18px;opacity:.85;font-size:.85rem}
+.error{color:#ff6b9d}
 .hidden{display:none!important}
-.result{background:rgba(255,255,255,.07);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:24px;margin:16px 0;box-shadow:0 8px 32px rgba(0,0,0,.25)}
-.result h2{margin:0 0 12px;font-size:1.3rem}
-.icon{font-size:4rem;text-align:center;margin:8px 0}
-.temp{font-size:3.5rem;font-weight:800;text-align:center;line-height:1}
-.label{text-align:center;opacity:.85;margin:4px 0 16px}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.stats>div{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:10px;border-radius:8px;text-align:center}
-.stats span{font-size:.7rem;opacity:.7;text-transform:uppercase;letter-spacing:.5px;display:block}
-.stats strong{font-size:1.1rem;display:block;margin-top:4px}
-.monthly{display:flex;gap:6px;overflow-x:auto;padding:8px 4px;scrollbar-width:thin}
-.monthly::-webkit-scrollbar{height:6px}
-.mday{flex:0 0 60px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 4px;text-align:center;font-size:.8rem}
-.mday.today{background:linear-gradient(135deg,#ff6b9d,#ff8aab);color:#fff;border-color:transparent}
-.mday .mday-date{font-size:.65rem;opacity:.8;font-weight:600}
-.mday .mday-icon{font-size:1.2rem;margin:2px 0}
-.mday .mday-temps{font-size:.7rem}
-.mday .mday-temps .max{font-weight:700}
-.mday .mday-precip{font-size:.65rem;opacity:.8}
-.weekly{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:16px}
-.day{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:8px 4px;text-align:center;font-size:.75rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:768px){.grid{grid-template-columns:1fr}}
+.card{background:rgba(255,255,255,.07);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.summary{font-size:.95rem;line-height:1.5}
+.summary-label{display:inline-block;padding:2px 8px;background:linear-gradient(135deg,#4facfe,#5b7fff);color:#fff;border-radius:10px;font-size:.68rem;font-weight:700;margin-right:8px;text-transform:uppercase;letter-spacing:.5px;vertical-align:middle}
+.current-main{text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.current-main .icon{font-size:4rem;line-height:1}
+.current-main .temp{font-size:3.2rem;font-weight:800;line-height:1;margin:4px 0}
+.current-info h2{margin:0 0 4px;font-size:1.15rem}
+.current-info .sub{opacity:.7;font-size:.8rem;margin-bottom:10px}
+.current-info .label{margin-bottom:12px;opacity:.9}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stats>div{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);padding:8px;border-radius:8px;text-align:center}
+.stats span{font-size:.65rem;opacity:.7;text-transform:uppercase;letter-spacing:.3px;display:block}
+.stats strong{font-size:.95rem;display:block;margin-top:2px}
+h3.section-title{font-size:.95rem;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+h3.section-title .badge{font-size:.65rem;padding:2px 6px;background:linear-gradient(135deg,#4facfe,#5b7fff);color:#fff;border-radius:8px;font-weight:600}
+/* 24h chart */
+.chart-container{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;margin-top:4px}
+canvas{max-height:200px}
+/* Weekly - 2-3x TALLER for readability */
+.weekly{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:8px}
+.day{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:14px 8px;text-align:center;transition:all .2s;min-height:220px;display:flex;flex-direction:column;justify-content:space-between}
+.day:hover{transform:translateY(-2px);background:rgba(255,255,255,.1)}
 .day.today{background:linear-gradient(135deg,#ff6b9d,#ff8aab);color:#fff;border-color:transparent}
-.day-name{font-size:.68rem;opacity:.85;font-weight:600;margin-bottom:2px}
-.day-icon{font-size:1.3rem;margin:2px 0}
-.day-temps{font-size:.68rem;margin-bottom:3px}
+.day-name{font-size:.82rem;opacity:.9;font-weight:600;margin-bottom:4px}
+.day-icon{font-size:1.8rem;margin:4px 0}
+.day-temps{font-size:.82rem;margin:4px 0}
 .day-temps .max{font-weight:700}
-.day-times{display:flex;gap:1px;margin:3px 0;justify-content:space-between}
-.day-time{display:flex;flex-direction:column;align-items:center;gap:0;flex:1;min-width:0}
-.time-label{font-size:.48rem;opacity:.7;text-transform:uppercase;letter-spacing:.2px;font-weight:600}
-.time-icon{font-size:.8rem;line-height:1}
-.time-temp{font-size:.6rem;font-weight:700}
-.day-clothing{font-size:.5rem;opacity:.95;margin:3px 1px;padding:2px 3px;background:rgba(255,255,255,.1);border-radius:4px;line-height:1.15;font-weight:500}
-.day-precip{font-size:.6rem;opacity:.8;margin-top:2px}
-h3.section-title{font-size:1rem;margin:0 0 12px;opacity:.9}
-.chart-container{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px;margin-top:16px}
-.planner-form{display:flex;flex-direction:column;gap:10px;margin-top:8px}
-.planner-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.day-temps .min{opacity:.7}
+.day-times{display:flex;gap:3px;margin:8px 0;justify-content:space-between;flex:1}
+.day-time{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;flex:1;background:rgba(255,255,255,.04);border-radius:6px;padding:4px 2px}
+.day.today .day-time{background:rgba(0,0,0,.15)}
+.time-label{font-size:.62rem;opacity:.85;text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.time-icon{font-size:1.1rem;line-height:1}
+.time-temp{font-size:.72rem;font-weight:700}
+.day-clothing{font-size:.62rem;opacity:.95;margin:6px 0;padding:4px 6px;background:rgba(255,255,255,.1);border-radius:6px;line-height:1.3;font-weight:500;text-align:left}
+.day.today .day-clothing{background:rgba(0,0,0,.18);color:#fff}
+.day-precip{font-size:.7rem;opacity:.8;margin-top:4px}
+/* 16-day monthly */
+.monthly{display:flex;gap:6px;overflow-x:auto;padding:6px 4px;scrollbar-width:thin}
+.monthly::-webkit-scrollbar{height:5px}
+.mday{flex:0 0 56px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:6px 3px;text-align:center;font-size:.7rem}
+.mday.today{background:linear-gradient(135deg,#ff6b9d,#ff8aab);color:#fff;border-color:transparent}
+.mday .mday-date{font-size:.6rem;opacity:.8;font-weight:600}
+.mday .mday-icon{font-size:1.1rem;margin:2px 0}
+.mday .mday-temps{font-size:.65rem}
+.mday .mday-temps .max{font-weight:700}
+.mday .mday-precip{font-size:.58rem;opacity:.8}
+/* Planner */
+.planner-form{display:flex;flex-direction:column;gap:8px}
+.planner-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
 .planner-row.two{grid-template-columns:1fr 1fr}
-.planner-row label{font-size:.7rem;opacity:.75;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-.planner-row input,.planner-row select{padding:9px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-size:.9rem;outline:none}
-#planBtn{padding:11px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,#4facfe,#5b7fff);color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:6px}
-#planBtn:disabled{opacity:.5}
-.planner-headline{font-size:1.05rem;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.12)}
-.planner-weather{margin:8px 0 12px;opacity:.95}
-.planner-advice ul{margin:6px 0 0;padding-left:22px}
-.planner-advice li{margin:3px 0}
-.warning{background:rgba(255,180,50,.12);border:1px solid rgba(255,180,50,.4);padding:10px 12px;border-radius:8px;font-size:.88rem;margin:8px 0;display:flex;align-items:center;gap:8px}
-.default-loc-btn{padding:7px 14px;border-radius:20px;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.14);font-size:.78rem;cursor:pointer;margin:10px auto 0;display:block;backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);font-weight:600}
-.default-loc-btn:hover{background:rgba(255,255,255,.14)}
-footer{text-align:center;padding:20px 16px 0;font-size:.8rem;opacity:.6;margin-top:20px}
-footer .build{font-family:monospace;padding:2px 6px;background:rgba(255,255,255,.08);border-radius:4px;font-size:.72rem;border:1px solid rgba(255,255,255,.12)}
-.quick-cities{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:700px;margin:0 auto}
-.quick-cities button{padding:5px 10px;border-radius:20px;background:rgba(255,255,255,.07);color:#fff;border:1px solid rgba(255,255,255,.14);font-size:.72rem;cursor:pointer}
-.quick-cities button.active{background:linear-gradient(135deg,#4facfe,#5b7fff);border-color:transparent}
-
+.planner-row label{font-size:.65rem;opacity:.75;margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px;font-weight:600}
+.planner-row input,.planner-row select{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem;outline:none;font-family:inherit}
+#planBtn{padding:10px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,#4facfe,#5b7fff);color:#fff;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:4px}
+.planner-headline{font-size:.95rem;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.12)}
+.warning{background:rgba(255,180,50,.12);border:1px solid rgba(255,180,50,.4);padding:8px 10px;border-radius:8px;font-size:.8rem;margin:6px 0;display:flex;align-items:center;gap:6px}
+.planner-advice ul{margin:4px 0 0;padding-left:20px}
+.planner-advice li{margin:2px 0}
+footer{text-align:center;padding:16px 0 0;font-size:.72rem;opacity:.5}
+footer .build{font-family:monospace;padding:1px 5px;background:rgba(255,255,255,.08);border-radius:4px;font-size:.68rem;border:1px solid rgba(255,255,255,.12)}
+@media(max-width:900px){.weekly{grid-template-columns:repeat(4,1fr)}.day{min-height:200px}}
+@media(max-width:600px){.weekly{grid-template-columns:repeat(3,1fr)}.day{min-height:180px}}
 </style>
 </head>
 <body>
 <div class="container">
 <h1>🌤️ OMTG Weather</h1>
+<p class="subtitle">Valós idejű 16 napos előrejelzés · Heti nézet · Planner</p>
 <div class="search">
 <input type="text" id="cityInput" value="Dunaszeg" placeholder="Város neve..." autocomplete="off">
 <button id="searchBtn" type="submit">🔍</button>
 </div>
-<div id="chartWrap" class="hidden">
-<div class="result">
-<h3 class="section-title">📈 24 órás előrejelzés</h3>
+<div class="quick-cities" id="quickCities"></div>
+<button class="default-loc-btn" id="defaultLocBtn">📍 Alap: <span id="defaultLocText">Dunaszeg</span></button>
+<div id="status"></div>
+<main id="content" class="hidden">
+<div class="card summary" id="summary"></div>
+<div class="grid">
+<div class="card current-main" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:24px">
+<div class="icon" id="currentIcon">☀️</div>
+<div class="temp" id="currentTemp">--°</div>
+</div>
+<div class="card current-info" style="padding:20px">
+<h2 id="cityName">--</h2>
+<p class="sub" id="country">--</p>
+<p class="label" id="condition">--</p>
+<div class="stats">
+<div><span>Érzet</span><strong id="feelsLike">--°</strong></div>
+<div><span>Pára</span><strong id="humidity">--%</strong></div>
+<div><span>Szél</span><strong id="wind">--</strong></div>
+<div><span>Nyomás</span><strong id="pressure">--</strong></div>
+<div><span>Napkelte</span><strong id="sunrise">--:--</strong></div>
+<div><span>Napnyugta</span><strong id="sunset">--:--</strong></div>
+</div>
+</div>
+</div>
+<div class="card" id="chartCard" style="display:none">
+<h3 class="section-title">📈 24 órás előrejelzés <span class="badge">hőmérséklet + csapadék</span></h3>
 <div class="chart-container"><canvas id="chartCanvas"></canvas></div>
 </div>
+<div class="card" id="weeklyCard" style="display:none">
+<h3 class="section-title">📅 Heti előrejelzés <span class="badge">reggel / dél / este + öltözet</span></h3>
+<div class="weekly" id="weekly"></div>
 </div>
-<div id="plannerWrap" class="hidden">
-<div class="result">
-<h3 class="section-title">🗓️ Tervező — személyre szabott</h3>
-<form id="plannerForm" class="planner-form" onsubmit="return false">
+<div class="card" id="monthlyCard" style="display:none">
+<h3 class="section-title">📆 16 napos előrejelzés <span class="badge">vízszintes görgetés</span></h3>
+<div class="monthly" id="monthly"></div>
+</div>
+<div class="card" id="plannerCard" style="display:none">
+<h3 class="section-title">🗓️ Tervező <span class="badge">személyre szabott</span></h3>
+<form class="planner-form" onsubmit="return false">
 <div class="planner-row">
 <div><label>Dátum</label><input type="date" id="planDate" required></div>
 <div><label>Kezdés</label><input type="time" id="planTime" value="09:00" required></div>
@@ -108,35 +156,22 @@ footer .build{font-family:monospace;padding:2px 6px;background:rgba(255,255,255,
 </div>
 <div class="planner-row two">
 <div><label>Közlekedés</label><select id="planTransport"><option value="car">🚗 Autó</option><option value="bus">🚌 Busz</option><option value="train">🚆 Vonat</option><option value="plane">✈️ Repülő</option><option value="bike">🚲 Kerékpár</option><option value="walk">🚶 Gyalog</option><option value="motor">🏍️ Motor</option></select></div>
-<div><label>Tevékenység</label><select id="planActivity"><option value="séta">🚶 Séta</option><option value="túra">🥾 Túra</option><option value="piknik">🧺 Piknik</option><option value="sport">⚽ Sport</option><option value="fotó">📸 Fotózás</option><option value="kert">🌱 Kertészkedés</option><option value="strand">🏖️ Strand</option><option value="város">🏛️ Városnézés</option><option value="üzleti">💼 Üzleti út</option></select></div>
+<div><label>Tevékenység</label><select id="planActivity"><option value="séta">🚶 Séta</option><option value="túra">🥾 Túra</option><option value="piknik">🧺 Piknik</option><option value="sport">⚽ Sport</option><option value="fotó">📸 Fotózás</option><option value="kert">🌱 Kert</option><option value="strand">🏖️ Strand</option><option value="város">🏛️ Városnézés</option><option value="üzleti">💼 Üzleti</option></select></div>
 </div>
-<button type="button" id="planBtn" onclick="runPlanner()">🗓️ Tervezés</button>
+<button type="button" id="planBtn">🗓️ Tervezés</button>
 </form>
 <div id="plannerResult"></div>
 </div>
+</main>
+<footer>OMTG Weather <span class="build">v3.0</span> · Adatok: <a href="https://open-meteo.com/" target="_blank" style="color:inherit">Open-Meteo</a> + <a href="https://nominatim.openstreetmap.org/" target="_blank" style="color:inherit">OpenStreetMap</a></footer>
 </div>
-<button class="default-loc-btn" id="defaultLocBtn" onclick="toggleDefaultLocation()">📍 Alap: <span id="defaultLocText">Dunaszeg</span></button>
-<div id="status"></div>
-<div id="result"></div>
-<div id="monthlyWrap" style="display:none">
-<div class="result" style="margin-top:16px">
-<h3 class="section-title">📆 16 napos előrejelzés</h3>
-<div class="monthly" id="monthly"></div>
-</div>
-</div>
-<div id="weeklyWrap" style="display:none">
-<div class="result" style="margin-top:16px">
-<h3 class="section-title">📅 Heti előrejelzés — reggel / dél / este + öltözet</h3>
-<div class="weekly" id="weekly"></div>
-</div>
-</div>
-</div>
-<footer>OMTG Weather <span class="build">v2.0 · STEP 4-8</span><br><span style="font-size:.7rem;opacity:.7">Adatok: <a href="https://open-meteo.com/" target="_blank" style="color:inherit">Open-Meteo</a> · <a href="https://nominatim.openstreetmap.org/" target="_blank" style="color:inherit">OpenStreetMap</a></span></footer>
 <script>
 const WMO_CODE={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',71:'❄️',73:'❄️',75:'❄️',80:'🌦️',81:'🌦️',82:'🌦️',95:'⛈️',96:'⛈️',99:'⛈️'};
-const WMO_LABEL={0:'Tiszta',1:'Többnyire tiszta',2:'Részben felhős',3:'Borult',45:'Köd',48:'Köd',51:'Szitálás',53:'Szitálás',55:'Szitálás',61:'Eső',63:'Eső',65:'Erős eső',71:'Hó',73:'Hó',75:'Erős hó',80:'Zápor',81:'Zápor',82:'Erős zápor',95:'Zivatar',96:'Jéges zivatar',99:'Erős jéges zivatar'};
+const CITIES=['Dunaszeg','Budapest','Debrecen','Szeged','Pécs','Győr','Miskolc','Sopron','Mosonmagyaróvár','Székesfehérvár','Kecskemét','Szombathely','Bécs'];
+const DEFAULT_LOC={name:'Dunaszeg',lat:47.7671,lon:17.5667};
+let lastWeatherData=null,chartInstance=null;
 
-function setStatus(m,e){const el=document.getElementById('status');el.textContent=m;el.className=e?'status error':'status'}
+function setStatus(m,e){const el=document.getElementById('status');el.textContent=m;el.className=e?'error':''}
 
 function clothingAdvice(t,r,w){
   const i=[];
@@ -154,101 +189,160 @@ function clothingAdvice(t,r,w){
   return i.join(' + ');
 }
 
+function getDefaultLocation(){try{const s=localStorage.getItem('omtg_default_location');return s?JSON.parse(s):DEFAULT_LOC}catch(e){return DEFAULT_LOC}}
+function setDefaultLocation(loc){try{localStorage.setItem('omtg_default_location',JSON.stringify(loc))}catch(e){}}
+function toggleDefaultLocation(){const cur=getDefaultLocation();if(cur.source==='geolocation'){setDefaultLocation(DEFAULT_LOC);document.getElementById('defaultLocText').textContent='Dunaszeg';load();return}if(!navigator.geolocation){return}setStatus('📍 Helyzet lekérése...');navigator.geolocation.getCurrentPosition(async(pos)=>{try{const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&accept-language=hu&zoom=10');const d=await r.json();const name=d.address?.city||d.address?.town||d.address?.village||'Saját hely';setDefaultLocation({name,lat:pos.coords.latitude,lon:pos.coords.longitude,source:'geolocation'});document.getElementById('defaultLocText').textContent=name;load();}catch(e){setStatus('❌ '+e.message,true)}},()=>{},{timeout:5000});}
+
+function renderQuickCities(){const c=document.getElementById('quickCities');c.innerHTML=CITIES.map(x=>'<button data-city="'+x+'">'+x+'</button>').join('');c.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{document.getElementById('cityInput').value=b.dataset.city;c.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');load()}))}
+
 async function load(){
   const city=document.getElementById('cityInput').value.trim()||'Dunaszeg';
   const btn=document.getElementById('searchBtn');
   btn.disabled=true;
-  document.getElementById('result').innerHTML='';
-  document.getElementById('monthlyWrap').style.display='none';
-  document.getElementById('weeklyWrap').style.display='none';
-  setStatus('⏳ Betöltés: '+city+'...');
+  setStatus('⏳ '+city+'...');
   try{
     const res=await fetch('/api/weather?city='+encodeURIComponent(city));
     if(!res.ok)throw new Error('Szerver hiba ('+res.status+')');
     const data=await res.json();
     if(data.error)throw new Error(data.error);
+    lastWeatherData=data;
     render(data);
-    setStatus('✅ Frissítve: '+new Date().toLocaleTimeString('hu-HU'));
+    setStatus('✅ '+new Date().toLocaleTimeString('hu-HU'));
   }catch(e){
-    console.error('Load:',e);
-    setStatus('❌ '+e.message,true);
-    document.getElementById('result').innerHTML='<div class="result"><h2>⚠️ '+e.message+'</h2><p>Próbáld újra.</p></div>';
+    console.error(e);setStatus('❌ '+e.message,true);
   }
   btn.disabled=false;
 }
 
 function render(data){
   try{
-    const w=data.weather;
-    const c=w.current;
+    const w=data.weather,c=data.current;
     const icon=WMO_CODE[c.weather_code]||'🌡️';
-    const label=WMO_LABEL[c.weather_code]||'Ismeretlen';
-    const placeName=data.geo.display.split(',')[0];
-    let html='<div class="result">';
-    html+='<h2>'+placeName+'</h2>';
-    html+='<div class="icon">'+icon+'</div>';
-    html+='<div class="temp">'+Math.round(c.temperature_2m)+'°C</div>';
-    html+='<div class="label">'+label+'</div>';
-    html+='<div class="stats">';
-    html+='<div><span>Érzet</span><strong>'+Math.round(c.apparent_temperature)+'°C</strong></div>';
-    html+='<div><span>Pára</span><strong>'+c.relative_humidity_2m+'%</strong></div>';
-    html+='<div><span>Szél</span><strong>'+Math.round(c.wind_speed_10m)+' km/h</strong></div>';
-    html+='<div><span>Nyomás</span><strong>'+Math.round(c.surface_pressure)+' hPa</strong></div>';
-    html+='<div><span>Napkelte</span><strong>'+new Date(w.daily.sunrise[0]).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})+'</strong></div>';
-    html+='<div><span>Napnyugta</span><strong>'+new Date(w.daily.sunset[0]).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})+'</strong></div>';
-    html+='</div></div>';
-    document.getElementById('result').innerHTML=html;
-    // 16-day forecast
-    let monthly='<div class="monthly">';
-    for(let i=0;i<w.daily.time.length;i++){
-      const wd=WMO_CODE[w.daily.weather_code[i]]||'🌡️';
-      const d=new Date(w.daily.time[i]);
-      const isToday=i===0;
-      const lbl=isToday?'Ma':(i===1?'Holnap':d.toLocaleDateString('hu-HU',{weekday:'short',day:'numeric'}));
-      monthly+='<div class="mday'+(isToday?' today':'')+'"><div class="mday-date">'+lbl+'</div><div class="mday-icon">'+wd+'</div><div class="mday-temps"><span class="max">'+Math.round(w.daily.temperature_2m_max[i])+'°</span> '+Math.round(w.daily.temperature_2m_min[i])+'°</div><div class="mday-precip">💧 '+(w.daily.precipitation_sum[i]||0).toFixed(1)+'mm</div></div>';
-    }
-    monthly+='</div>';
-    document.getElementById('monthly').innerHTML=monthly;
-    document.getElementById('monthlyWrap').style.display='block';
-    // 7-day weekly with 3 time slots + clothing
-    let weekly='<div class="weekly">';
-    for(let i=0;i<7&&i<w.daily.time.length;i++){
-      const wd=WMO_CODE[w.daily.weather_code[i]]||'🌡️';
-      const d=new Date(w.daily.time[i]);
-      const isToday=i===0;
-      const dayName=isToday?'Ma':(i===1?'Holnap':d.toLocaleDateString('hu-HU',{weekday:'short'}));
-      const dayDate=w.daily.time[i];
-      const findH=(h)=>{const idx=w.hourly.time.findIndex(t=>t.startsWith(dayDate+'T'+String(h).padStart(2,'0')));return idx};
-      const mI=findH(8),nI=findH(12),eI=findH(18);
-      const morning=mI!==-1?{icon:WMO_CODE[w.hourly.weather_code[mI]]||wd,temp:Math.round(w.hourly.temperature_2m[mI])}:{icon:wd,temp:Math.round(w.daily.temperature_2m_min[i])};
-      const noon=nI!==-1?{icon:WMO_CODE[w.hourly.weather_code[nI]]||wd,temp:Math.round(w.hourly.temperature_2m[nI])}:{icon:wd,temp:Math.round(w.daily.temperature_2m_max[i])};
-      const evening=eI!==-1?{icon:WMO_CODE[w.hourly.weather_code[eI]]||wd,temp:Math.round(w.hourly.temperature_2m[eI])}:{icon:'🌙',temp:Math.round((w.daily.temperature_2m_max[i]+w.daily.temperature_2m_min[i])/2)};
-      const wsmax=w.daily.wind_speed_10m_max?w.daily.wind_speed_10m_max[i]:0;
-      const cloth=clothingAdvice(w.daily.temperature_2m_max[i],w.daily.precipitation_sum[i]||0,wsmax);
-      weekly+='<div class="day'+(isToday?' today':'')+'">';
-      weekly+='<div class="day-name">'+dayName+'</div>';
-      weekly+='<div class="day-icon">'+wd+'</div>';
-      weekly+='<div class="day-temps"><span class="max">'+Math.round(w.daily.temperature_2m_max[i])+'°</span> '+Math.round(w.daily.temperature_2m_min[i])+'°</div>';
-      weekly+='<div class="day-times">';
-      weekly+='<div class="day-time"><span class="time-label">reggel</span><span class="time-icon">'+morning.icon+'</span><span class="time-temp">'+morning.temp+'°</span></div>';
-      weekly+='<div class="day-time"><span class="time-label">dél</span><span class="time-icon">'+noon.icon+'</span><span class="time-temp">'+noon.temp+'°</span></div>';
-      weekly+='<div class="day-time"><span class="time-label">este</span><span class="time-icon">'+evening.icon+'</span><span class="time-temp">'+evening.temp+'°</span></div>';
-      weekly+='</div>';
-      weekly+='<div class="day-clothing">'+cloth+'</div>';
-      weekly+='<div class="day-precip">💧 '+(w.daily.precipitation_sum[i]||0).toFixed(1)+'mm</div>';
-      weekly+='</div>';
-    }
-    weekly+='</div>';
-    document.getElementById('weekly').innerHTML=weekly;
-    document.getElementById('weeklyWrap').style.display='block';
+    const place=data.geo.display.split(',')[0];
+    document.getElementById('content').classList.remove('hidden');
+    document.getElementById('summary').innerHTML='<span class="summary-label">Összefoglaló</span> '+place+' · '+icon+' '+Math.round(c.temperature_2m)+'°C · Érzet '+Math.round(c.apparent_temperature)+'°C · 👕 '+clothingAdvice(c.temperature_2m,0,c.wind_speed_10m);
+    document.getElementById('currentIcon').textContent=icon;
+    document.getElementById('currentTemp').textContent=Math.round(c.temperature_2m)+'°C';
+    document.getElementById('cityName').textContent=place;
+    document.getElementById('country').textContent=data.geo.display.split(',').slice(1).join(',').trim();
+    document.getElementById('condition').textContent=w.current.weather_code;
+    document.getElementById('feelsLike').textContent=Math.round(c.apparent_temperature)+'°C';
+    document.getElementById('humidity').textContent=c.relative_humidity_2m+'%';
+    document.getElementById('wind').textContent=Math.round(c.wind_speed_10m)+' km/h';
+    document.getElementById('pressure').textContent=Math.round(c.surface_pressure)+' hPa';
+    document.getElementById('sunrise').textContent=new Date(w.daily.sunrise[0]).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('sunset').textContent=new Date(w.daily.sunset[0]).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'});
+    // 24h chart
+    loadChart(w);
+    // Weekly (2-3x taller)
+    renderWeekly(w);
+    // Monthly
+    renderMonthly(w);
+    // Planner
+    setPlanDateBounds();
+    document.getElementById('plannerCard').style.display='block';
+    document.getElementById('plannerResult').innerHTML='';
   }catch(e){
     console.error('Render:',e);
-    document.getElementById('result').innerHTML='<div class="result"><h2>⚠️ Render hiba</h2><p>'+e.message+'</p></div>';
   }
+}
+
+function loadChart(w){
+  const now=new Date();const startIdx=w.hourly.time.findIndex(t=>new Date(t)>=now);
+  const s=arr=>arr.slice(startIdx,startIdx+24);
+  const labels=s(w.hourly.time).map(t=>new Date(t).toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'}));
+  const temps=s(w.hourly.temperature_2m),rains=s(w.hourly.precipitation);
+  const tc=getComputedStyle(document.body).getPropertyValue('--text').trim()||'#fff';
+  if(chartInstance)chartInstance.destroy();
+  chartInstance=new Chart(document.getElementById('chartCanvas'),{type:'line',data:{labels,datasets:[{label:'°C',data:temps,borderColor:'#ff6b9d',backgroundColor:'rgba(255,107,157,.2)',tension:.4,fill:true,yAxisID:'y',pointRadius:0},{label:'mm',data:rains,borderColor:'#4ecdc4',backgroundColor:'rgba(78,205,196,.4)',type:'bar',yAxisID:'y1',pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{labels:{color:tc}},tooltip:{backgroundColor:'rgba(15,25,45,0.95)',cornerRadius:12,padding:10,callbacks:{title:(i)=>'🕐 '+i[0].label,label:(i)=>i.dataset.yAxisID==='y'?'🌡️ '+Math.round(i.raw)+'°C':'💧 '+i.raw.toFixed(1)+' mm'}}}},scales:{x:{ticks:{color:tc}},y:{position:'left',title:{display:true,text:'°C',color:tc},ticks:{color:tc}},y1:{position:'right',min:0,title:{display:true,text:'mm',color:tc},ticks:{color:tc}}}}});
+  document.getElementById('chartCard').style.display='block';
+}
+
+function renderWeekly(w){
+  let html='<div class="weekly">';
+  for(let i=0;i<7&&i<w.daily.time.length;i++){
+    const wd=WMO_CODE[w.daily.weather_code[i]]||'🌡️';
+    const d=new Date(w.daily.time[i]);
+    const isToday=i===0;
+    const dayName=isToday?'Ma':(i===1?'Holnap':d.toLocaleDateString('hu-HU',{weekday:'short'}));
+    const dayDate=w.daily.time[i];
+    const findH=(h)=>{const idx=w.hourly.time.findIndex(t=>t.startsWith(dayDate+'T'+String(h).padStart(2,'0')));return idx};
+    const mI=findH(8),nI=findH(12),eI=findH(18);
+    const m=mI!==-1?{i:WMO_CODE[w.hourly.weather_code[mI]]||wd,t:Math.round(w.hourly.temperature_2m[mI])}:{i:wd,t:Math.round(w.daily.temperature_2m_min[i])};
+    const n=nI!==-1?{i:WMO_CODE[w.hourly.weather_code[nI]]||wd,t:Math.round(w.hourly.temperature_2m[nI])}:{i:wd,t:Math.round(w.daily.temperature_2m_max[i])};
+    const e=eI!==-1?{i:WMO_CODE[w.hourly.weather_code[eI]]||wd,t:Math.round(w.hourly.temperature_2m[eI])}:{i:'🌙',t:Math.round((w.daily.temperature_2m_max[i]+w.daily.temperature_2m_min[i])/2)};
+    const cloth=clothingAdvice(w.daily.temperature_2m_max[i],w.daily.precipitation_sum[i]||0,0);
+    html+='<div class="day'+(isToday?' today':'')+'">';
+    html+='<div class="day-name">'+dayName+'</div>';
+    html+='<div class="day-icon">'+wd+'</div>';
+    html+='<div class="day-temps"><span class="max">'+Math.round(w.daily.temperature_2m_max[i])+'°</span> <span class="min">'+Math.round(w.daily.temperature_2m_min[i])+'°</span></div>';
+    html+='<div class="day-times">';
+    html+='<div class="day-time"><span class="time-label">reggel</span><span class="time-icon">'+m.i+'</span><span class="time-temp">'+m.t+'°</span></div>';
+    html+='<div class="day-time"><span class="time-label">dél</span><span class="time-icon">'+n.i+'</span><span class="time-temp">'+n.t+'°</span></div>';
+    html+='<div class="day-time"><span class="time-label">este</span><span class="time-icon">'+e.i+'</span><span class="time-temp">'+e.t+'°</span></div>';
+    html+='</div>';
+    html+='<div class="day-clothing">'+cloth+'</div>';
+    html+='<div class="day-precip">💧 '+(w.daily.precipitation_sum[i]||0).toFixed(1)+'mm</div>';
+    html+='</div>';
+  }
+  html+='</div>';
+  document.getElementById('weekly').innerHTML=html;
+  document.getElementById('weeklyCard').style.display='block';
+}
+
+function renderMonthly(w){
+  let html='<div class="monthly">';
+  for(let i=0;i<w.daily.time.length;i++){
+    const wd=WMO_CODE[w.daily.weather_code[i]]||'🌡️';
+    const d=new Date(w.daily.time[i]);
+    const isToday=i===0;
+    const lbl=isToday?'Ma':(i===1?'Holnap':d.toLocaleDateString('hu-HU',{weekday:'short',day:'numeric'}));
+    html+='<div class="mday'+(isToday?' today':'')+'"><div class="mday-date">'+lbl+'</div><div class="mday-icon">'+wd+'</div><div class="mday-temps"><span class="max">'+Math.round(w.daily.temperature_2m_max[i])+'°</span> <span class="min">'+Math.round(w.daily.temperature_2m_min[i])+'°</span></div><div class="mday-precip">💧 '+(w.daily.precipitation_sum[i]||0).toFixed(1)+'mm</div></div>';
+  }
+  html+='</div>';
+  document.getElementById('monthly').innerHTML=html;
+  document.getElementById('monthlyCard').style.display='block';
+}
+
+function setPlanDateBounds(){
+  const d=document.getElementById('planDate');const n=new Date();const max=new Date(n);max.setDate(max.getDate()+16);
+  d.min=n.toISOString().split('T')[0];d.max=max.toISOString().split('T')[0];
+  const tmw=new Date(n);tmw.setDate(tmw.getDate()+1);d.value=tmw.toISOString().split('T')[0];
+}
+
+function runPlanner(){
+  if(!lastWeatherData){return}
+  const date=document.getElementById('planDate').value;
+  const time=document.getElementById('planTime').value;
+  const dur=parseInt(document.getElementById('planDuration').value);
+  if(!date||!time||!dur)return;
+  const w=lastWeatherData;
+  const start=new Date(date+'T'+time+':00');const end=new Date(start.getTime()+dur*3600000);
+  const now=new Date();const daysAhead=(start-now)/86400000;
+  let warn='';if(daysAhead>16)warn='16+ napra: az időjárás jelentősen változhat!';else if(daysAhead>7)warn='7+ napra: bizonytalan.';
+  const sI=w.hourly.time.findIndex(t=>t>=start.toISOString().slice(0,16));
+  const eI=w.hourly.time.findIndex(t=>t>end.toISOString().slice(0,16));
+  const stI=sI===-1?w.hourly.time.length-1:sI;const enI=eI===-1?w.hourly.time.length:eI;
+  const temps=w.hourly.temperature_2m.slice(stI,enI);
+  const rains=w.hourly.precipitation.slice(stI,enI);
+  const avgT=temps.length?temps.reduce((a,b)=>a+b,0)/temps.length:0;
+  const maxT=temps.length?Math.max(...temps):0;const minT=temps.length?Math.min(...temps):0;
+  const maxR=rains.length?Math.max(...rains):0;const totR=rains.length?rains.reduce((a,b)=>a+b,0):0;
+  const cloth=clothingAdvice(maxT,totR,0);
+  let html='<div class="planner-headline">📅 '+date+' '+time+' • '+dur+' óra</div>';
+  if(warn)html+='<div class="warning">⚠️ '+warn+'</div>';
+  html+='<div>👕 <strong>Öltözet:</strong> '+cloth+'</div>';
+  html+='<div>🌡️ Hőmérséklet: '+Math.round(minT)+'°C — '+Math.round(maxT)+'°C</div>';
+  if(maxR>0)html+='<div>💧 Max csapadék: '+maxR.toFixed(1)+'mm/h</div>';
+  html+='<div>Összes csapadék: '+totR.toFixed(1)+'mm</div>';
+  document.getElementById('plannerResult').innerHTML=html;
 }
 
 document.getElementById('cityInput').addEventListener('keydown',function(e){if(e.key==='Enter')load()});
 document.getElementById('searchBtn').addEventListener('click',load);
+document.getElementById('defaultLocBtn').addEventListener('click',toggleDefaultLocation);
+document.getElementById('planBtn').addEventListener('click',runPlanner);
+renderQuickCities();
 load();
 </script>
 </body>
