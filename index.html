@@ -379,7 +379,7 @@ function generateSummary(d,ti){
   s+=' 👕 Öltözet: '+clothingAdvice(todayMax,todayRain,todayWind)+'.';
   return s;
 }
-function render(d,placeName,ti=0){
+function render(d,placeName,ti=0){try{
   const c=d.current;const w=WMO[c.weather_code]||WMO[0];
   lastWeatherData=d;document.getElementById('content').classList.remove('hidden');
   document.getElementById('currentIcon').textContent=w.icon;
@@ -432,6 +432,7 @@ function render(d,placeName,ti=0){
     monthlyEl.appendChild(div);
   }
   const todayEl=monthlyEl.children[0];if(todayEl)todayEl.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
+}catch(e){console.error('Render:',e);setStatus('❌ Render: '+e.message,true);document.getElementById('content').classList.remove('hidden');}
 }
 function setPlanDateBounds(){
   const d=document.getElementById('planDate');const n=new Date();
