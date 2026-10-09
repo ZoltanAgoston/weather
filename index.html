@@ -506,12 +506,7 @@ async function search(city){
 }
 document.getElementById('searchForm').addEventListener('submit',e=>{e.preventDefault();const c=document.getElementById('cityInput').value.trim();if(c)search(c)});
 renderQuickCities();
-window.addEventListener('load',()=>{
-  const loc=getDefaultLocation();
-  document.getElementById('defaultLocText').textContent=loc.name;
-  document.querySelectorAll('.quick-cities button').forEach(b=>{if(b.dataset.city===loc.name)b.classList.add('active')});
-  search(loc.name);
-});
+(function init(){const loc=getDefaultLocation();document.getElementById('defaultLocText').textContent=loc.name;document.querySelectorAll('.quick-cities button').forEach(b=>{if(b.dataset.city===loc.name)b.classList.add('active')});search(loc.name);})();
 if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}
 </script>
 </body>
