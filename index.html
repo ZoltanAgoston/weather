@@ -217,7 +217,9 @@ async function load(){
 
 function render(data){
   try{
-    const w=data.weather,c=data.current;
+    const w=data&&data.weather,c=data&&data.current;
+    if(!w){document.getElementById("content").classList.remove("hidden");document.getElementById("summary").innerHTML="<div class=\"card\"><h2>⚠️ Nincs adat</h2><p>Próbáld újra.</p></div>";return;}
+    if(!c){document.getElementById("content").classList.remove("hidden");document.getElementById("summary").innerHTML="<div class=\"card\"><h2>⚠️ Hiányos adat</h2><p>Az API nem adott vissza current adatot. Próbáld újra.</p></div>";return;}
     const icon=WMO_CODE[c.weather_code]||'🌡️';
     const place=data.geo.display.split(',')[0];
     document.getElementById('content').classList.remove('hidden');
@@ -226,7 +228,7 @@ function render(data){
     document.getElementById('currentTemp').textContent=Math.round(c.temperature_2m)+'°C';
     document.getElementById('cityName').textContent=place;
     document.getElementById('country').textContent=data.geo.display.split(',').slice(1).join(',').trim();
-    document.getElementById('condition').textContent=w.current.weather_code;
+    document.getElementById('condition').textContent=Math.round(c.temperature_2m)+'°C · '+Math.round(c.apparent_temperature)+'°C érzet';
     document.getElementById('feelsLike').textContent=Math.round(c.apparent_temperature)+'°C';
     document.getElementById('humidity').textContent=c.relative_humidity_2m+'%';
     document.getElementById('wind').textContent=Math.round(c.wind_speed_10m)+' km/h';
