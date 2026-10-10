@@ -18,6 +18,8 @@
 <meta name="twitter:image" content="https://idojaras.omtg.hu/og-image.png">
 <link rel="canonical" href="https://idojaras.omtg.hu/">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <title>OMTG Weather</title>
 <style>
 body{font-family:-apple-system,sans-serif;background:linear-gradient(135deg,#0a0a1a,#1a1a3e,#0f3460);color:#fff;min-height:100vh;padding:20px;margin:0}
@@ -146,6 +148,10 @@ footer .build{font-family:monospace;padding:1px 5px;background:rgba(255,255,255,
 <h3 class="section-title">📆 16 napos előrejelzés <span class="badge">vízszintes görgetés</span></h3>
 <div class="monthly" id="monthly"></div>
 </div>
+<div class="card" id="mapCard" style="display:none">
+<h3 class="section-title">🗺️ Térkép <span class="badge">50km körzet + időjárás</span></h3>
+<div id="mapContainer" style="height:400px;border-radius:10px;overflow:hidden"></div>
+</div>
 <div class="card" id="plannerCard" style="display:none">
 <h3 class="section-title">🗓️ Tervező <span class="badge">személyre szabott</span></h3>
 <form class="planner-form" onsubmit="return false">
@@ -220,6 +226,10 @@ function render(data){
     const w=data&&data.weather,c=data&&data.current;
     if(!w){document.getElementById("content").classList.remove("hidden");document.getElementById("summary").innerHTML="<div class=\"card\"><h2>⚠️ Nincs adat</h2><p>Próbáld újra.</p></div>";return;}
     if(!c){document.getElementById("content").classList.remove("hidden");document.getElementById("summary").innerHTML="<div class=\"card\"><h2>⚠️ Hiányos adat</h2><p>Az API nem adott vissza current adatot. Próbáld újra.</p></div>";return;}
+    // Map render if data available
+    if(data.geo&&data.geo.lat&&data.geo.lon){
+      renderMap(data);
+    }
     const icon=WMO_CODE[c.weather_code]||'🌡️';
     const place=data.geo.display.split(',')[0];
     document.getElementById('content').classList.remove('hidden');
@@ -245,10 +255,66 @@ function render(data){
     setPlanDateBounds();
     document.getElementById('plannerCard').style.display='block';
     document.getElementById('plannerResult').innerHTML='';
+    document.getElementById('mapCard').style.display='block';
   }catch(e){
     console.error('Render:',e);
     document.getElementById('summary').innerHTML='<div class="card"><h2>⚠️ Render hiba</h2><p style="opacity:.8;margin:8px 0">' +e.message+ '</p><p style="font-size:.8rem;opacity:.6">F12 → Console a részletekért.</p></div>';
   }
+}
+
+let mapInstance=null;
+function renderMap(data){
+  const lat=data.geo.lat, lon=data.geo.lon;
+  const w=data.weather;
+  const container=document.getElementById('mapContainer');
+  
+  if(mapInstance){mapInstance.remove(); mapInstance=null;}
+  
+  // Init map centered on city, zoom for ~50km radius
+  mapInstance=L.map('mapContainer', {zoomControl: true}).setView([lat, lon], 9);
+  
+  // OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
+  }).addTo(mapInstance);
+  
+  // 50km radius circle
+  L.circle([lat, lon], {
+    radius: 50000,
+    color: '#4facfe',
+    fillColor: '#4facfe',
+    fillOpacity: 0.1,
+    weight: 2
+  }).addTo(mapInstance).bindPopup('50 km körzet: ' + data.geo.display.split(',')[0]);
+  
+  // City marker
+  L.marker([lat, lon]).addTo(mapInstance)
+    .bindPopup('<b>' + data.geo.display.split(',')[0] + '</b><br>' + Math.round(data.current.temperature_2m) + '°C')
+    .openPopup();
+  
+  // Add temperature markers for nearby grid points (simplified: use daily data points if available)
+  // For now, add a simple temperature overlay text
+  if(w.hourly && w.hourly.time.length > 0){
+    const now = new Date();
+    const idx = w.hourly.time.findIndex(t => new Date(t) >= now);
+    if(idx !== -1){
+      const temp = Math.round(w.hourly.temperature_2m[idx]);
+      const precip = w.hourly.precipitation[idx];
+      L.marker([lat + 0.05, lon + 0.05]).addTo(mapInstance)
+        .bindPopup('Jelenleg: ' + temp + '°C, csapadék: ' + precip + 'mm/h');
+    }
+  }
+  
+  // Fit bounds to 50km circle
+  const bounds = L.latLngBounds(
+    [lat - 0.45, lon - 0.45],
+    [lat + 0.45, lon + 0.45]
+  );
+  mapInstance.fitBounds(bounds, {padding: [20, 20]});
+  
+  // Force resize after container is visible
+  setTimeout(() => mapInstance.invalidateSize(), 100);
 }
 
 function loadChart(w){
