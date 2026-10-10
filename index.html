@@ -223,7 +223,7 @@ async function load(){
 
 function render(data){
   try{
-    const w=data&&data.weather,c=data&&data.current;
+    const w=data&&data.weather,c=data&&data.weather&&data.weather.current;
     if(!w){document.getElementById("content").classList.remove("hidden");document.getElementById("summary").innerHTML="<div class=\"card\"><h2>⚠️ Nincs adat</h2><p>Próbáld újra.</p></div>";return;}
     if(!c){document.getElementById("content").classList.remove("hidden");document.getElementById("summary").innerHTML="<div class=\"card\"><h2>⚠️ Hiányos adat</h2><p>Az API nem adott vissza current adatot. Próbáld újra.</p></div>";return;}
     // Map render if data available
