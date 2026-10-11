@@ -181,6 +181,9 @@ header{display:flex;align-items:center;gap:16px;padding:8px 0 16px}
 .city-card-temp{font-size:1.5rem;font-weight:800;color:var(--text);font-family:var(--font-mono);line-height:1;letter-spacing:-1px}
 .city-card-cond{font-size:.7rem;color:var(--text-soft);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .city-card-hilo{font-size:.65rem;color:var(--text-mute);font-family:var(--font-mono);margin-top:2px}
+.city-card-desc{font-size:.65rem;color:var(--text-soft);font-weight:500;margin-top:5px;line-height:1.35;padding-top:5px;border-top:1px solid rgba(15,23,42,.06);font-style:italic;position:relative;z-index:1}
+.city-card-desc .see{color:var(--text-2);font-weight:600;font-style:normal}
+.city-card-desc .expect{color:var(--accent);font-weight:700;font-style:normal}
 
 /* ===== HIGHLIGHTS ===== */
 .highlights{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
@@ -193,14 +196,27 @@ header{display:flex;align-items:center;gap:16px;padding:8px 0 16px}
 .hl-value{font-size:.95rem;font-weight:800;color:var(--text);font-family:var(--font-mono);line-height:1.1;margin-top:2px}
 
 /* ===== WIND COMPASS ===== */
-.wind-compass{position:relative;width:110px;height:110px;margin:0 auto 8px}
-.wind-compass::before{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid rgba(37,99,235,.15)}
-.wind-compass::after{content:"";position:absolute;inset:10px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.08),transparent 70%)}
-.wind-compass .n{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:.65rem;font-weight:800;color:var(--accent);font-family:var(--font-mono);z-index:2}
-.wind-compass .e{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:.65rem;font-weight:700;color:var(--text-mute);font-family:var(--font-mono);z-index:2}
-.wind-compass .s{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:.65rem;font-weight:700;color:var(--text-mute);font-family:var(--font-mono);z-index:2}
-.wind-compass .w{position:absolute;left:4px;top:50%;transform:translateY(-50%);font-size:.65rem;font-weight:700;color:var(--text-mute);font-family:var(--font-mono);z-index:2}
-.wind-compass .arrow{position:absolute;top:8px;left:50%;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:16px solid var(--accent);filter:drop-shadow(0 2px 4px rgba(37,99,235,.5));transform-origin:50% 47px;transition:transform 1.2s var(--ease);z-index:3}
+/* ===== WIND COMPASS v6 - Professional animated SVG ===== */
+.compass-v6{position:relative;width:160px;height:160px;margin:0 auto 8px;filter:drop-shadow(0 6px 20px rgba(37,99,235,.15))}
+.compass-v6 svg{width:100%;height:100%;overflow:visible}
+.compass-v6 .c-face{fill:url(#cBg);stroke:rgba(37,99,235,.2);stroke-width:1}
+.compass-v6 .c-ring-outer{fill:none;stroke:rgba(37,99,235,.3);stroke-width:1.5}
+.compass-v6 .tick-major{stroke:rgba(37,99,235,.5);stroke-width:1.5;stroke-linecap:round}
+.compass-v6 .tick-mid{stroke:rgba(37,99,235,.3);stroke-width:.8;stroke-linecap:round}
+.compass-v6 .tick-minor{stroke:rgba(37,99,235,.15);stroke-width:.4;stroke-linecap:round}
+.compass-v6 .dir-n{font-size:18px;font-weight:900;fill:#ef4444;font-family:var(--font-mono);letter-spacing:0}
+.compass-v6 .dir-s{font-size:16px;font-weight:800;fill:#3b82f6;font-family:var(--font-mono)}
+.compass-v6 .dir-e,.compass-v6 .dir-w{font-size:14px;font-weight:800;fill:#475569;font-family:var(--font-mono)}
+.compass-v6 .dir-ne,.compass-v6 .dir-se,.compass-v6 .dir-sw,.compass-v6 .dir-nw{font-size:8px;font-weight:700;fill:#94a3b8;font-family:var(--font-mono);letter-spacing:.3px}
+.compass-v6 .c-hub{fill:url(#cHub);stroke:#d97706;stroke-width:1.2}
+.compass-v6 .c-hub-shine{fill:url(#cShine);opacity:.7}
+.compass-v6 .needle-n{fill:url(#needleN);stroke:#dc2626;stroke-width:.5;stroke-linejoin:round;filter:drop-shadow(0 2px 4px rgba(239,68,68,.4))}
+.compass-v6 .needle-s{fill:url(#needleS);stroke:#1e40af;stroke-width:.5;stroke-linejoin:round;filter:drop-shadow(0 2px 4px rgba(59,130,246,.3))}
+.compass-v6 .needle-group{transform-origin:100px 100px;transition:transform 1.5s cubic-bezier(.34,1.56,.64,1)}
+.compass-v6 .c-rotate{transform-origin:100px 100px;animation:compassBreathe 4s ease-in-out infinite}
+@keyframes compassBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+.compass-v6 .compass-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.3rem;font-weight:800;color:var(--text);font-family:var(--font-mono);pointer-events:none;margin-top:18px}
+.compass-v6 .compass-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:.55rem;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.6px;pointer-events:none;margin-top:2px}
 
 /* ===== HOURLY ===== */
 .hourly-strip{display:flex;gap:8px;overflow-x:auto;padding:4px 2px;scrollbar-width:thin}
@@ -252,29 +268,47 @@ header{display:flex;align-items:center;gap:16px;padding:8px 0 16px}
 .grid-marker:hover{transform:scale(1.4);background:var(--accent);border-color:#fff;z-index:10}
 .grid-marker.loaded{background:var(--cyan);border-color:#fff;box-shadow:0 2px 8px rgba(6,182,212,.4)}
 
-/* ===== AI INSIGHTS ===== */
-.ai-insights{position:relative;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(224,242,254,.6));overflow:hidden}
+/* ===== AI INSIGHTS v6 - Tall vertical tiles with big graphics ===== */
+.ai-insights{position:relative;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(224,242,254,.6));overflow:hidden;padding:24px}
 .ai-insights::before{content:"";position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(167,139,250,.25),transparent 70%);border-radius:50%;pointer-events:none}
-.ai-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.ai-head{display:flex;align-items:center;gap:10px;margin-bottom:18px;position:relative;z-index:2}
 .ai-dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--cyan));box-shadow:0 0 12px rgba(37,99,235,.5);animation:pulse 2s ease-in-out infinite}
 .ai-title{font-size:1rem;font-weight:800;color:var(--text);letter-spacing:-.2px}
 .ai-badge{font-size:.62rem;background:linear-gradient(135deg,var(--accent),var(--cyan));color:#fff;padding:3px 8px;border-radius:8px;margin-left:auto;font-weight:700}
-.ai-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
-.ai-tile{background:rgba(255,255,255,.7);border:1px solid rgba(15,23,42,.05);border-radius:14px;padding:12px;display:flex;align-items:flex-start;gap:10px;transition:all .3s var(--ease);backdrop-filter:blur(8px)}
-.ai-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow);background:rgba(255,255,255,.95)}
-.ai-ico{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(6,182,212,.1));display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.ai-body{flex:1;min-width:0}
-.ai-lbl{font-size:.65rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;font-family:var(--font-mono)}
-.ai-msg{font-size:.78rem;color:var(--text-soft);line-height:1.4}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;position:relative;z-index:2}
+@media(max-width:640px){.ai-grid{grid-template-columns:1fr}}
+.ai-tile-v6{position:relative;border-radius:20px;overflow:hidden;height:300px;box-shadow:0 4px 20px rgba(15,23,42,.1),0 1px 4px rgba(15,23,42,.04);border:1px solid rgba(15,23,42,.04);transition:all .4s var(--ease);display:flex;flex-direction:column}
+.ai-tile-v6:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(15,23,42,.18),0 4px 12px rgba(15,23,42,.08)}
+.ai-graphic-v6{position:relative;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:16px 12px 8px}
+.ai-graphic-v6 svg{width:100%;height:100%;max-width:200px;filter:drop-shadow(0 4px 12px rgba(15,23,42,.12))}
+.ai-content-v6{padding:14px 16px 16px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-top:1px solid rgba(15,23,42,.04)}
+.ai-lbl-v6{font-size:.7rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;font-family:var(--font-mono);display:flex;align-items:center;gap:5px}
+.ai-msg-v6{font-size:.82rem;color:var(--text-2);line-height:1.45;font-weight:500}
 
-/* ===== MOON ===== */
-.moon-phase{display:flex;align-items:center;gap:14px;padding:6px 0}
-.moon-svg-wrap{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#1e1b4b,#312e81);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(30,27,75,.3);flex-shrink:0;overflow:hidden}
-.moon-svg-wrap svg{width:48px;height:48px}
-.moon-info{flex:1;min-width:0}
-.moon-name{font-size:.95rem;font-weight:800;color:var(--text);font-family:var(--font-mono)}
-.moon-illum{font-size:.72rem;color:var(--text-soft);font-family:var(--font-mono);margin-top:2px}
-.moon-next{font-size:.72rem;color:var(--accent);font-weight:700;margin-top:2px}
+/* ===== MOON v6 - Beautiful realistic animated ===== */
+.moon-phase-v6{display:flex;align-items:center;gap:16px;padding:8px 4px}
+.moon-v6-wrap{width:80px;height:80px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#1e1b4b,#0f172a);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(30,27,75,.4),inset 0 2px 8px rgba(0,0,0,.3);flex-shrink:0;position:relative;overflow:hidden}
+.moon-v6-wrap::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(254,243,199,.15),transparent 60%);pointer-events:none}
+.moon-v6-wrap svg{width:68px;height:68px;overflow:visible}
+.moon-v6-wrap .m-glow{fill:url(#mGlow);animation:moonGlow 3s ease-in-out infinite;transform-origin:50px 50px}
+.moon-v6-wrap .m-body{fill:url(#mBody);filter:drop-shadow(0 2px 4px rgba(0,0,0,.2))}
+.moon-v6-wrap .m-crater{fill:#94a3b8;opacity:.25}
+.moon-v6-wrap .m-highlight{fill:rgba(255,255,255,.15)}
+.moon-v6-wrap .m-shadow{fill:url(#mShadow);transition:cx 1.5s var(--ease),r 1.5s var(--ease)}
+.moon-v6-wrap .m-star{fill:#fff;animation:moonStar 2.5s ease-in-out infinite}
+.moon-v6-wrap .m-star.s1{animation-delay:0s}
+.moon-v6-wrap .m-star.s2{animation-delay:.6s}
+.moon-v6-wrap .m-star.s3{animation-delay:1.2s}
+.moon-v6-wrap .m-star.s4{animation-delay:.3s}
+.moon-v6-wrap .m-star.s5{animation-delay:1.8s}
+@keyframes moonGlow{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:.7;transform:scale(1.08)}}
+@keyframes moonStar{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.moon-info-v6{flex:1;min-width:0}
+.moon-name-v6{font-size:1rem;font-weight:800;color:var(--text);font-family:var(--font-mono);letter-spacing:-.3px}
+.moon-illum-v6{font-size:.75rem;color:var(--text-soft);font-family:var(--font-mono);margin-top:3px;display:flex;align-items:center;gap:8px}
+.moon-bar-v6{width:80px;height:4px;background:var(--card-3);border-radius:2px;overflow:hidden;margin-top:2px}
+.moon-bar-v6 .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));border-radius:2px;transition:width 1s var(--ease)}
+.moon-next-v6{font-size:.72rem;color:var(--accent);font-weight:700;margin-top:4px}
 
 /* ===== SAFETY ===== */
 .safety-bar{position:relative;width:100%;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--safe),var(--warn),var(--danger));margin:10px 0 6px;box-shadow:inset 0 1px 2px rgba(0,0,0,.1)}
@@ -372,24 +406,67 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   <div class="two-col">
     <div class="card stagger">
       <h3 class="card-title">🧭 Szél compass</h3>
-      <div class="wind-compass">
-        <span class="n">É</span><span class="e">K</span><span class="s">D</span><span class="w">Ny</span>
-        <div class="arrow" id="windArrow"></div>
-      </div>
-      <div style="text-align:center;margin-top:8px">
-        <span style="font-size:1.4rem;font-weight:800;color:var(--text);font-family:var(--font-mono)" id="windSpeed">--</span>
-        <span style="font-size:.85rem;color:var(--text-soft);font-weight:600;margin-left:4px">km/h</span>
-        <div style="font-size:.78rem;color:var(--text-soft);margin-top:4px" id="windDir">--</div>
+      <div class="compass-v6">
+        <svg viewBox="0 0 200 200" class="c-rotate">
+          <defs>
+            <radialGradient id="cBg" cx="50%" cy="50%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#f0f9ff"/></radialGradient>
+            <linearGradient id="needleN" x1="50%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#fca5a5"/><stop offset="40%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient>
+            <linearGradient id="needleS" x1="50%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient>
+            <radialGradient id="cHub" cx="40%" cy="40%"><stop offset="0%" stop-color="#fef3c7"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#b45309"/></radialGradient>
+            <radialGradient id="cShine" cx="35%" cy="30%"><stop offset="0%" stop-color="#fff" stop-opacity=".8"/><stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient>
+          </defs>
+          <circle cx="100" cy="100" r="92" class="c-ring-outer"/>
+          <circle cx="100" cy="100" r="80" class="c-face"/>
+          <g id="compassTicks"></g>
+          <text x="100" y="32" text-anchor="middle" class="dir-n">N</text>
+          <text x="168" y="106" text-anchor="middle" class="dir-e">E</text>
+          <text x="100" y="178" text-anchor="middle" class="dir-s">S</text>
+          <text x="32" y="106" text-anchor="middle" class="dir-w">W</text>
+          <text x="147" y="58" text-anchor="middle" class="dir-ne">NE</text>
+          <text x="147" y="152" text-anchor="middle" class="dir-se">SE</text>
+          <text x="53" y="152" text-anchor="middle" class="dir-sw">SW</text>
+          <text x="53" y="58" text-anchor="middle" class="dir-nw">NW</text>
+          <g class="needle-group" id="compassNeedle">
+            <path class="needle-s" d="M100 130 L94 100 L106 100 Z"/>
+            <path class="needle-n" d="M100 70 L94 100 L106 100 Z"/>
+            <circle cx="100" cy="100" r="8" class="c-hub"/>
+            <circle cx="98" cy="97" r="3" class="c-hub-shine"/>
+          </g>
+        </svg>
+        <div class="compass-num" id="windSpeed">--</div>
+        <div class="compass-label">km/h · <span id="windDir">--</span></div>
       </div>
     </div>
     <div class="card stagger">
       <h3 class="card-title">🌙 Hold fázis</h3>
-      <div class="moon-phase">
-        <div class="moon-svg-wrap"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="#1e1b4b"/><circle cx="32" cy="32" r="28" fill="#f4f4f5" id="moonLit"/></svg></div>
-        <div class="moon-info">
-          <div class="moon-name" id="moonPhase">—</div>
-          <div class="moon-illum" id="moonIllum">—</div>
-          <div class="moon-next" id="moonNext">—</div>
+      <div class="moon-phase-v6">
+        <div class="moon-v6-wrap">
+          <svg viewBox="0 0 100 100">
+            <defs>
+              <radialGradient id="mGlow" cx="50%" cy="50%"><stop offset="0%" stop-color="#fef3c7" stop-opacity=".6"/><stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/></radialGradient>
+              <radialGradient id="mBody" cx="38%" cy="35%"><stop offset="0%" stop-color="#fef9c3"/><stop offset="40%" stop-color="#fde68a"/><stop offset="80%" stop-color="#d97706"/><stop offset="100%" stop-color="#92400e"/></radialGradient>
+              <radialGradient id="mShadow" cx="50%" cy="50%"><stop offset="0%" stop-color="#0f172a"/><stop offset="80%" stop-color="#1e1b4b"/><stop offset="100%" stop-color="#312e81"/></radialGradient>
+            </defs>
+            <circle class="m-star s1" cx="12" cy="18" r="1"/>
+            <circle class="m-star s2" cx="88" cy="14" r="0.8"/>
+            <circle class="m-star s3" cx="90" cy="58" r="0.9"/>
+            <circle class="m-star s4" cx="8" cy="72" r="0.7"/>
+            <circle class="m-star s5" cx="78" cy="88" r="0.8"/>
+            <circle cx="50" cy="50" r="48" class="m-glow"/>
+            <circle cx="50" cy="50" r="32" class="m-body"/>
+            <circle class="m-crater" cx="38" cy="42" r="4"/>
+            <circle class="m-crater" cx="56" cy="55" r="5.5"/>
+            <circle class="m-crater" cx="44" cy="62" r="3"/>
+            <circle class="m-crater" cx="60" cy="38" r="2.5"/>
+            <circle class="m-crater" cx="42" cy="50" r="1.8"/>
+            <ellipse class="m-highlight" cx="42" cy="38" rx="10" ry="6"/>
+            <circle class="m-shadow" id="moonShadow" cx="50" cy="50" r="32"/>
+          </svg>
+        </div>
+        <div class="moon-info-v6">
+          <div class="moon-name-v6" id="moonPhase">—</div>
+          <div class="moon-illum-v6"><span id="moonIllum">—</span><div class="moon-bar-v6"><div class="fill" id="moonBar" style="width:0%"></div></div></div>
+          <div class="moon-next-v6" id="moonNext">—</div>
         </div>
       </div>
     </div>
@@ -519,6 +596,37 @@ const WC_DESC={0:'Tiszta idő',1:'Többnyire tiszta',2:'Részben felhős',3:'Bor
 function getIconSvg(wc,isDay){const type=WC_ICON[wc]||(isDay===0?'moon':'sun');const maker=ICON_MAKERS[type]||makeSun;return maker(++_iconUid);}
 function getDesc(wc){return WC_DESC[wc]||'Változó';}
 function degToCompass(deg){const d=['É','ÉK','K','DK','D','DNy','Ny','ÉNy'];return d[Math.round(((deg%360)+360)%360/45)%8];}
+function getCitySummary(wc,temp,wind,precip){
+  const isThunder=[95,96,99].includes(wc);
+  const isSnow=[71,73,75,77,85,86].includes(wc);
+  const isHeavyRain=[55,65,82].includes(wc);
+  const isRain=[51,53,61,63,80,81].includes(wc);
+  const isFog=[45,48].includes(wc);
+  const isClear=wc===0;
+  const isPartly=wc===1||wc===2;
+  const isWindy=wind>25;
+  const isStormy=wind>50;
+  let see='',mean='',expect='';
+  if(isThunder){see='Zivatar, villámlás';mean='Viharos, hangos';expect='Bent maradni, várni';}
+  else if(isSnow){see='Havazás, fehér táj';mean='Hideg, latyakos';expect='Meleg ruha, csúszásveszély';}
+  else if(isHeavyRain){see='Heves eső, sötét';mean='Nedves, szeles';expect='Esernyő, vízálló';}
+  else if(isRain){see='Eső, borús';mean='Nedves, hűvös';expect='Esernyő, zárt cipő';}
+  else if(isFog){see='Köd, szürkeség';mean='Rossz látás, nyirkos';expect='Lassú vezetés, fény';}
+  else if(isClear){see='Tiszta ég, napsütés';mean='Ragyogó, meleg';expect='Naptej, napszemüveg';}
+  else if(isPartly){see='Részben felhős';mean='Napos, enyhe';expect='Kellemes, réteges ruha';}
+  else{see='Borús, felhős';mean='Szürke, hűvös';expect='Eső lehetséges';}
+  if(temp<=-5)expect='Extrém hideg · meleg ruha · sapka';
+  else if(temp<5)expect='Hideg · télikabát · réteges';
+  else if(temp<10)expect='Hűvös · pulóver · kabát';
+  else if(temp<18)expect='Enyhe · könnyű kabát · farmer';
+  else if(temp<25)expect='Kellemes · póló · hosszúnadrág';
+  else if(temp<30)expect='Meleg · póló · rövidnadrág · víz';
+  else expect='Forróság · naptej · víz · kalap';
+  if(isStormy)expect+=' · Viharos szél!';
+  else if(isWindy)expect+=' · Szeles';
+  if(precip>5)expect+=' · Esőveszély';
+  return `<span class="see">${see}</span> → <span class="expect">${expect}</span>`;
+}
 function setStatus(m,e){const el=document.getElementById('status');el.textContent=m;el.classList.toggle('error',!!e);if(!e)setTimeout(()=>{if(el.textContent===m)el.textContent=''},3e3);}
 function prefersReducedMotion(){return matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;}
 
@@ -537,16 +645,21 @@ function renderCityGroups(){
   wrap.innerHTML=html;
   for(const group of CITY_GROUPS){
     const scroll=document.getElementById('scroll-'+group.id);if(!scroll)continue;
-    scroll.innerHTML=group.cities.map(c=>`<div class="city-card" data-lat="${c.lat}" data-lon="${c.lon}" data-name="${c.n}"><div class="city-card-icon"><svg style="width:100%;height:100%">${getIconSvg(0,1).slice(0,4)||''}</svg></div><div class="city-card-body"><div class="city-card-name">${c.n}</div><div class="city-card-temp">--°</div><div class="city-card-cond">--</div><div class="city-card-hilo">--° / --°</div></div></div>`).join('');
+    scroll.innerHTML=group.cities.map(c=>`<div class="city-card" data-lat="${c.lat}" data-lon="${c.lon}" data-name="${c.n}"><div class="city-card-icon"><svg style="width:100%;height:100%">${getIconSvg(0,1).slice(0,4)||''}</svg></div><div class="city-card-body"><div class="city-card-name">${c.n}</div><div class="city-card-temp">--°</div><div class="city-card-cond">--</div><div class="city-card-hilo">--° / --°</div><div class="city-card-desc">Betöltés...</div></div></div>`).join('');
     scroll.querySelectorAll('.city-card').forEach(card=>card.addEventListener('click',()=>{document.getElementById('cityInput').value=card.dataset.name;load();window.scrollTo({top:0,behavior:'smooth'});}));
     group.cities.forEach((c,i)=>{
-      fetch('https://api.open-meteo.com/v1/forecast?latitude='+c.lat+'&longitude='+c.lon+'&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1').then(r=>r.json()).then(d=>{
+      fetch('https://api.open-meteo.com/v1/forecast?latitude='+c.lat+'&longitude='+c.lon+'&current=temperature_2m,weather_code,wind_speed_10m,precipitation&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto&forecast_days=1').then(r=>r.json()).then(d=>{
         const card=scroll.children[i];if(!card)return;
-        card.querySelector('.city-card-icon').innerHTML=getIconSvg(d.current.weather_code,1);
-        card.querySelector('.city-card-temp').textContent=Math.round(d.current.temperature_2m)+'°';
-        card.querySelector('.city-card-cond').textContent=getDesc(d.current.weather_code);
+        const wc=d.current.weather_code;
+        const temp=d.current.temperature_2m;
+        const wind=d.current.wind_speed_10m||0;
+        const precip=d.daily.precipitation_sum?d.daily.precipitation_sum[0]:0;
+        card.querySelector('.city-card-icon').innerHTML=getIconSvg(wc,1);
+        card.querySelector('.city-card-temp').textContent=Math.round(temp)+'°';
+        card.querySelector('.city-card-cond').textContent=getDesc(wc);
         card.querySelector('.city-card-hilo').textContent=Math.round(d.daily.temperature_2m_max[0])+'° / '+Math.round(d.daily.temperature_2m_min[0])+'°';
-      }).catch(()=>{});
+        card.querySelector('.city-card-desc').innerHTML=getCitySummary(wc,temp,wind,precip);
+      }).catch(()=>{card.querySelector('.city-card-desc').textContent='Adat nem elérhető';});
     });
   }
 }
