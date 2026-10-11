@@ -13,9 +13,9 @@ export default async function handler(req, res) {
     const display = geoData[0].display_name;
     const params = new URLSearchParams({
       latitude: lat, longitude: lon,
-      current: 'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,surface_pressure',
-      hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code',
-      daily: 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,wind_speed_10m_max',
+      current: 'temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m,surface_pressure',
+      hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m',
+      daily: 'weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant',
       timezone: 'auto', forecast_days: '16'
     });
     const wRes = await fetch('https://api.open-meteo.com/v1/forecast?' + params, {
