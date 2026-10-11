@@ -290,7 +290,7 @@ function renderMap(data){
   
   // City marker
   L.marker([lat, lon]).addTo(mapInstance)
-    .bindPopup('<b>' + data.geo.display.split(',')[0] + '</b><br>' + Math.round(data.current.temperature_2m) + '°C')
+    .bindPopup('<b>' + data.geo.display.split(',')[0] + '</b><br>' + Math.round(w.current.temperature_2m) + '°C')
     .openPopup();
   
   // Add temperature markers for nearby grid points (simplified: use daily data points if available)
