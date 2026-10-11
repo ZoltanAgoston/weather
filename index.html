@@ -998,7 +998,7 @@ WeatherAnim.prototype.set=function(type,params){
 WeatherAnim.prototype.makeRain=function(){
   const wx=Math.cos(this.windAngle)*this.windSpeed*0.35;
   const wy=Math.sin(this.windAngle)*this.windSpeed*0.35+6+Math.random()*4;
-  return{x:Math.random()*this.wind+200-Math.random()*400,y:Math.random()*this.h-this.h,vy:wy,vx:wx,len:8+Math.random()*8,op:0.25+Math.random()*0.4};
+  return{x:Math.random()*this.w,y:Math.random()*this.h-this.h,vy:wy,vx:wx,len:8+Math.random()*8,op:0.25+Math.random()*0.4};
 };
 WeatherAnim.prototype.makeSnow=function(){
   return{
