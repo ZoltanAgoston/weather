@@ -771,9 +771,6 @@ class WeatherAnim{
   resize(){
     const r=this.canvas.getBoundingClientRect();
     const dpr=Math.min(window.devicePixelRatio||1,2);
-  resize(){
-    const r=this.canvas.getBoundingClientRect();
-    const dpr=Math.min(window.devicePixelRatio||1,2);
     this.w=r.width||600;
     this.h=r.height||400;
     this.canvas.width=this.w*dpr;
@@ -1070,10 +1067,6 @@ class MapWeatherAnim{
     this.resize();
   }
   attachMap(map){this.map=map;window.addEventListener('resize',()=>this.resize());}
-  resize(){
-    if(!this.container)return;
-    const r=this.container.getBoundingClientRect();
-    const dpr=Math.min(window.devicePixelRatio||1,2);
   resize(){
     if(!this.container)return;
     const r=this.container.getBoundingClientRect();
