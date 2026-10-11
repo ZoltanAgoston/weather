@@ -130,9 +130,10 @@ canvas{max-height:240px!important}
 .day-name{font-size:.82rem;font-weight:700;letter-spacing:.3px}
 .day-date{font-size:.65rem;opacity:.7;margin-top:2px}
 .day-icon-big{font-size:2.2rem;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.2))}
-.day-temps{text-align:center;padding:4px 0}
-.day-temps .max{font-size:1.1rem;font-weight:800}
-.day-temps .min{font-size:.78rem;opacity:.65;margin-left:4px}
+.day-temps{text-align:center;padding:2px 0 4px;display:flex;align-items:baseline;justify-content:center;gap:4px;flex-direction:column}
+.day-temps .max{font-size:2.6rem;font-weight:900;line-height:.95;letter-spacing:-1.5px;background:linear-gradient(135deg,#fff,#a0c4ff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+.day.today .day-temps .max{background:linear-gradient(135deg,#fff,#ffd6e0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.day-temps .min{font-size:.82rem;opacity:.7;font-weight:600;margin-top:-4px}
 .day-slots{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px}
 .day-slot{background:rgba(255,255,255,.06);border-radius:6px;padding:5px 2px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1px}
 .day.today .day-slot{background:rgba(0,0,0,.18)}
@@ -141,6 +142,15 @@ canvas{max-height:240px!important}
 .day-slot .slot-t{font-size:.7rem;font-weight:700}
 .day-meta{display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid rgba(255,255,255,.1);font-size:.68rem;opacity:.9}
 .day-cloth{font-size:.62rem;opacity:.95;line-height:1.35;text-align:center;padding:5px 6px;background:rgba(255,255,255,.08);border-radius:6px;min-height:32px;display:flex;align-items:center;justify-content:center;font-weight:500}
+.day-chart{height:42px;margin:6px -2px 2px;position:relative;width:calc(100% + 4px)}
+.day-chart svg{width:100%;height:100%;display:block;overflow:visible}
+.day-chart .rain-bar{fill:rgba(78,205,196,.55);transition:fill .2s}
+.day-chart .rain-bar:hover{fill:rgba(78,205,196,.9)}
+.day-chart .temp-line{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.day-chart .temp-dot{fill:#fff;stroke-width:2;transition:r .2s}
+.day-chart .temp-dot:hover{r:4}
+.day-chart .area{fill:url(#tempGrad);opacity:.5}
+.day-hero{text-align:center;margin:4px 0 6px}
 .day.today .day-cloth{background:rgba(0,0,0,.2)}
 .monthly{display:flex;gap:8px;overflow-x:auto;padding:8px 4px 12px;scrollbar-width:thin}
 .monthly::-webkit-scrollbar{height:6px}
@@ -577,39 +587,51 @@ function renderWeekly(w){
     const dayName=isToday?'Ma':(i===1?'Holnap':d.toLocaleDateString('hu-HU',{weekday:'short'}));
     const dayDateStr=isToday?'Ma':d.toLocaleDateString('hu-HU',{month:'short',day:'numeric'});
     const dayDate=w.daily.time[i];
-    const findH=(h)=>w.hourly.time.findIndex(t=>t.startsWith(dayDate+'T'+String(h).padStart(2,'0')));
-    const mI=findH(8),nI=findH(12),eI=findH(18);
-    const mT=mI!==-1?w.hourly.temperature_2m[mI]:(w.daily.temperature_2m_min[i]+2);
-    const nT=nI!==-1?w.hourly.temperature_2m[nI]:w.daily.temperature_2m_max[i];
-    const eT=eI!==-1?w.hourly.temperature_2m[eI]:(w.daily.temperature_2m_min[i]+w.daily.temperature_2m_max[i])/2;
-    const mIco=mI!==-1?(WMO_CODE[w.hourly.weather_code[mI]]||wd).i:wd.i;
-    const nIco=nI!==-1?(WMO_CODE[w.hourly.weather_code[nI]]||wd).i:wd.i;
-    const eIco=eI!==-1?(WMO_CODE[w.hourly.weather_code[eI]]||{i:'🌙'}).i:'🌙';
-    const cloth=clothingAdvice(w.daily.temperature_2m_max[i],w.daily.precipitation_sum[i]||0,w.daily.wind_speed_10m_max?w.daily.wind_speed_10m_max[i]:0);
-    const rain=(w.daily.precipitation_sum[i]||0).toFixed(1);
+    const dow=d.getDay();const isWeekend=dow===0||dow===6;
+    const maxT=Math.round(w.daily.temperature_2m_max[i]);
+    const minT=Math.round(w.daily.temperature_2m_min[i]);
+    const dayHours=[];
+    for(let h=0;h<24;h++){
+      const idx=w.hourly.time.findIndex(t=>t.startsWith(dayDate+'T'+String(h).padStart(2,'0')+':00'));
+      if(idx!==-1){
+        dayHours.push({h:h,t:w.hourly.temperature_2m[idx],r:w.hourly.precipitation[idx]||0,wc:w.hourly.weather_code[idx]});
+      }else{
+        const curve=Math.sin((h-9)/24*Math.PI*2);
+        dayHours.push({h:h,t:(maxT+minT)/2+curve*(maxT-minT)/2,r:0,wc:w.daily.weather_code[i]});
+      }
+    }
+    const temps=dayHours.map(x=>x.t);
+    const rains=dayHours.map(x=>x.r);
+    const tMin=Math.min(...temps),tMax=Math.max(...temps);
+    const tRange=Math.max(1,tMax-tMin);
+    const rMax=Math.max(0.5,...rains);
+    const W=100,H=42,padX=2,padY=4;
+    const chartW=W-padX*2,chartH=H-padY*2;
+    const xFor=h=>padX+(h/23)*chartW;
+    const yForT=t=>padY+chartH-((t-tMin)/tRange)*chartH;
+    const yForR=r=>padY+chartH-(r/rMax)*(chartH*0.5);
+    const linePts=dayHours.map(x=>xFor(x.h).toFixed(1)+','+yForT(x.t).toFixed(1));
+    const linePath='M'+linePts.join(' L');
+    const areaPath=linePath+' L'+xFor(23).toFixed(1)+','+(H-padY).toFixed(1)+' L'+xFor(0).toFixed(1)+','+(H-padY).toFixed(1)+' Z';
+    const tColor=tempColor(maxT);
+    const id='day'+i+'-'+Date.now();
+    const rainBars=dayHours.filter(x=>x.r>0.05).map(x=>{
+      const bx=xFor(x.h)-1.2,bw=2.4,by=yForR(x.r),bh=(H-padY)-by;
+      return '<rect class="rain-bar" x="'+bx.toFixed(1)+'" y="'+by.toFixed(1)+'" width="'+bw+'" height="'+bh.toFixed(1)+'" rx="0.8"/>';
+    }).join('');
+    const tempDots=[6,12,18].map(h=>{
+      const x=dayHours[h];if(!x)return '';
+      return '<circle class="temp-dot" cx="'+xFor(x.h).toFixed(1)+'" cy="'+yForT(x.t).toFixed(1)+'" r="2.2" fill="'+tColor+'"/>';
+    }).join('');
+    const miniChart='<div class="day-chart"><svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+tColor+'" stop-opacity="0.6"/><stop offset="100%" stop-color="'+tColor+'" stop-opacity="0.05"/></linearGradient></defs>'+rainBars+'<path class="area" d="'+areaPath+'" fill="url(#'+id+')"/><path class="temp-line" d="'+linePath+'" stroke="'+tColor+'"/>'+tempDots+'</svg></div>';
+    const noonIcon=dayHours[12]?(WMO_CODE[dayHours[12].wc]||wd).i:wd.i;
+    const cloth=clothingAdvice(maxT,w.daily.precipitation_sum[i]||0,w.daily.wind_speed_10m_max?w.daily.wind_speed_10m_max[i]:0);
+    const rainTotal=(w.daily.precipitation_sum[i]||0).toFixed(1);
     const wind=w.daily.wind_speed_10m_max?Math.round(w.daily.wind_speed_10m_max[i]):0;
-    const dow=d.getDay();const isWeekend=dow===0||dow===6;html+=`<div class="day${isToday?' today':''}${isWeekend&&!isToday?' weekend':''}">
-      <div class="day-header">
-        <div class="day-name">${dayName}</div>
-        <div class="day-date">${dayDateStr}</div>
-        <div class="day-icon-big">${wd.i}</div>
-      </div>
-      <div class="day-temps"><span class="max">${Math.round(w.daily.temperature_2m_max[i])}°</span><span class="min"> / ${Math.round(w.daily.temperature_2m_min[i])}°</span></div>
-      <div class="day-slots">
-        <div class="day-slot"><span class="slot-lbl">reggel</span><span class="slot-ic">${mIco}</span><span class="slot-t">${Math.round(mT)}°</span></div>
-        <div class="day-slot"><span class="slot-lbl">dél</span><span class="slot-ic">${nIco}</span><span class="slot-t">${Math.round(nT)}°</span></div>
-        <div class="day-slot"><span class="slot-lbl">este</span><span class="slot-ic">${eIco}</span><span class="slot-t">${Math.round(eT)}°</span></div>
-      </div>
-      <div class="day-meta">
-        <span>💧 ${rain}mm</span>
-        <span>💨 ${wind}</span>
-      </div>
-      <div class="day-cloth">${cloth}</div>
-    </div>`;
+    html+='<div class="day'+(isToday?' today':'')+(isWeekend&&!isToday?' weekend':'')+'"><div class="day-header"><div class="day-name">'+dayName+'</div><div class="day-date">'+dayDateStr+'</div><div class="day-icon-big">'+noonIcon+'</div></div><div class="day-hero"><div class="day-temps"><span class="max">'+maxT+'°</span><span class="min">↓ '+minT+'°</span></div></div>'+miniChart+'<div class="day-meta"><span>💧 '+rainTotal+'mm</span><span>💨 '+wind+'</span></div><div class="day-cloth">'+cloth+'</div></div>';
   }
   document.getElementById('weekly').innerHTML=html;
 }
-
 function renderMonthly(w){
   let html='';
   for(let i=0;i<w.daily.time.length;i++){
