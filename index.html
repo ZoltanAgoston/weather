@@ -206,5 +206,59 @@ document.addEventListener('click',function(e){if(!e.target.closest('.search-wrap
 function updateAIInsights(c){const g=document.getElementById('aiGrid');if(!g)return;const t=c.temperature_2m||0,w=c.wind_speed_10m||0,wc=c.weather_code;const isR=[51,53,55,61,63,65,80,81,82,95,96,99].includes(wc),isS=[71,73,75,77,85,86].includes(wc);let mO,fO,oD,aT,aD,pT,pD,tT,tD;if(t<=-5){mO='Télikabát';fO='Télikabát';oD='Extrém hideg · sapka, kesztyű, szélálló.';}else if(t<10){mO='Pulóver+kabát';fO='Kardigán+farmer';oD='Hűvös · átmeneti kabát.';}else if(t<18){mO='Pulóver+farmer';fO='Kardigán+farmer';oD='Enyhe · könnyű kabát.';}else if(t<25){mO='Ing+farmer';fO='Blúz+farmer';oD='Kellemes · póló, farmer.';}else if(t<30){mO='Póló';fO='Póló+szoknya';oD='Meleg · rövidujjú, sok víz.';}else{mO='Trikó';fO='Lenge ruha';oD='Forróság · laza ruha, kalap, naptej.';}if(isR&&w>30){aT='Benti program';aD='Eső és szél · maradjon bent.';}else if(isR){aT='Esernyős séta';aD='Eső · esernyővel séta.';}else if(isS){aT='Síelés/Hó';aD='Havazás · síelés, szánkózás.';}else if(t>=20&&t<=26&&!isR&&w<15){aT='Tökéletes!';aD='Ideális kültéri program.';}else{aT='Kellemes séta';aD='Enyhe · séta, kávézó.';}if(isR){pT='Kerti teendők';pD='Esős · locsolás kihagyható.';}else if(t>28){pT='Rendszeres öntözés';pD='Meleg · napi öntözés.';}else{pT='Normál gondozás';pD='Kellemes · normál öntözés.';}if(isR&&w>40){tT='Benti közlekedés';tD='Viharos · autó, ne kerékpár.';}else if(isR){tT='Autó/Busz';tD='Esős · esernyő.';}else if(t>30){tT='Klíma használat';tD='Forróság · klímás autó, víz.';}else{tT='Kerékpár/gyalog';tD='Ideális · kerékpár, séta.';}g.innerHTML='<div class="ai-tile ai-outfit"><div class="ai-graphic">👔 '+mO+' / '+fO+'</div><div class="ai-content"><div class="ai-lbl">👔 Öltözék · Férfi & Női</div><div class="ai-msg"><b>Férfi:</b> '+mO+' · <b>Nő:</b> '+fO+'<br>'+oD+'</div></div></div><div class="ai-tile ai-activity"><div class="ai-graphic">🎾</div><div class="ai-content"><div class="ai-lbl">🎾 '+aT+'</div><div class="ai-msg">'+aD+'</div></div></div><div class="ai-tile ai-plant"><div class="ai-graphic">🌱</div><div class="ai-content"><div class="ai-lbl">🌱 '+pT+'</div><div class="ai-msg">'+pD+'</div></div></div><div class="ai-tile ai-transport"><div class="ai-graphic">🚗</div><div class="ai-content"><div class="ai-lbl">🚗 '+tT+'</div><div class="ai-msg">'+tD+'</div></div></div>';}
 loadSavedLocs();updateMoon();renderCityGroups();load();
 </script>
+<div class="container">
+<header>
+  <div class="brand">
+    <img src="/icon-light.png" alt="OMTG" class="brand-logo" width="48" height="48">
+    <div class="brand-text">OMTG<small>WEATHER</small></div>
+  </div>
+  <form class="search-wrap" id="searchForm" autocomplete="off">
+    <div class="search">
+      <input type="text" id="cityInput" placeholder="Keresés..." aria-label="Város keresése">
+      <button type="submit" id="searchBtn">Keresés</button>
+      <button type="button" id="favBtn" class="icon">⭐</button>
+    </div>
+    <div class="suggestions" id="suggestions"></div>
+  </form>
+</header>
+<div class="saved-locs" id="savedLocs"></div>
+<button class="default-loc-btn" id="defaultLocBtn">📍 <span id="defaultLocText">Dunaszeg</span></button>
+<div id="status"></div>
+<main id="content" class="hidden">
+  <div class="card hero-card stagger">
+    <div class="hero-grid">
+      <div class="hero-icon" id="heroIcon"></div>
+      <div class="hero-temp-wrap">
+        <div class="hero-place">📍 <span id="place">--</span></div>
+        <div class="hero-temp" id="currentTemp">--°</div>
+        <div class="hero-cond" id="condition">--</div>
+        <div class="hero-feels">Érzet: <b id="feelsTemp">--°</b></div>
+      </div>
+      <div class="hero-meta">
+        <div class="hi-lo"><span id="hiTemp">--</span>°<small>Max</small></div>
+        <div class="hi-lo lo"><span id="loTemp">--</span>°<small>Min</small></div>
+      </div>
+    </div>
+  </div>
+  <div class="card stagger"><h2 class="section-title">📋 Összefoglaló</h2><div id="summary"></div></div>
+  <div class="card stagger"><h2 class="section-title">🌟 Mai részletek</h2><div class="highlights" id="highlights"></div></div>
+  <div class="two-col">
+    <div class="card stagger"><h3 class="card-title">🧭 Szél compass</h3><div class="compass-v6"><div class="wind-particles" id="windParticles"></div><svg viewBox="0 0 200 200" class="c-rotate"><defs><radialGradient id="cBg" cx="50%" cy="50%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#f0f9ff"/></radialGradient><linearGradient id="needleN" x1="50%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#fca5a5"/><stop offset="40%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient><linearGradient id="needleS" x1="50%" y1="0%" x2="50%" y2="100%"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#1e3a8a"/></linearGradient><radialGradient id="cHub" cx="40%" cy="40%"><stop offset="0%" stop-color="#fef3c7"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#b45309"/></radialGradient><linearGradient id="speedGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#22c55e"/><stop offset="50%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#ef4444"/></linearGradient></defs><circle cx="100" cy="100" r="88" fill="none" stroke="rgba(15,23,42,.04)" stroke-width="6"/><circle cx="100" cy="100" r="88" fill="none" stroke="url(#speedGrad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="553" transform="rotate(-90 100 100)" id="speedArc"/><circle cx="100" cy="100" r="92" class="c-ring-outer"/><circle cx="100" cy="100" r="80" class="c-face"/><g id="compassTicks"></g><text x="100" y="32" text-anchor="middle" class="dir-n">N</text><text x="168" y="106" text-anchor="middle" class="dir-e">K</text><text x="100" y="178" text-anchor="middle" class="dir-s">D</text><text x="32" y="106" text-anchor="middle" class="dir-w">Ny</text><g class="needle-group" id="compassNeedle"><path class="needle-s" d="M100 130 L94 100 L106 100 Z"/><path class="needle-n" d="M100 70 L94 100 L106 100 Z"/><circle cx="100" cy="100" r="8" class="c-hub"/><circle cx="98" cy="97" r="3" class="c-hub-shine"/></g></svg><div class="compass-num" id="windSpeed">--</div><div class="compass-label">km/h · <span id="windDir">--</span></div><div class="compass-beaufort" id="windBeaufort">--</div></div></div>
+    <div class="card stagger"><h3 class="card-title">🌙 Hold fázis</h3><div class="moon-phase-v6"><div class="moon-v6-wrap"><svg viewBox="0 0 100 100"><defs><radialGradient id="mBody" cx="38%" cy="35%"><stop offset="0%" stop-color="#fef9c3"/><stop offset="80%" stop-color="#d97706"/><stop offset="100%" stop-color="#92400e"/></radialGradient><radialGradient id="mShadow" cx="50%" cy="50%"><stop offset="0%" stop-color="#0f172a"/><stop offset="100%" stop-color="#312e81"/></radialGradient></defs><circle cx="50" cy="50" r="32" fill="url(#mBody)"/><circle id="moonShadow" cx="50" cy="50" r="32" fill="url(#mShadow)"/></svg></div><div class="moon-info-v6"><div class="moon-name-v6" id="moonPhase">—</div><div class="moon-next-v6" id="moonNext">—</div></div></div></div>
+  </div>
+  <div class="card stagger"><h3 class="card-title">🛡 Biztonsági index</h3><div class="safety-bar"><div class="safety-marker" id="safetyMarker" style="left:30%"></div></div><div class="safety-labels"><span>Biztonságos</span><span>Vigyázz</span><span>Veszélyes</span></div><div class="safety-status" id="safetyStatus">Betöltés...</div></div>
+  <div class="card stagger"><h3 class="card-title">⏰ Órás <span class="badge">24h</span></h3><div class="hourly-strip" id="hourly"></div></div>
+  <div class="card stagger"><h3 class="card-title">📅 7 napos <span class="badge">klikk</span></h3><div class="weekly" id="weekly"></div></div>
+  <div class="card stagger"><h3 class="card-title">📆 16 napos <span class="badge">görgetés</span></h3><div class="monthly" id="monthly"></div></div>
+  <div id="cityGroups"></div>
+  <div class="ai-insights stagger"><div class="ai-head"><span class="ai-dot"></span><span class="ai-title">🧠 AI Insights</span><span class="ai-badge">BETA</span></div><div class="ai-grid" id="aiGrid"></div></div>
+  <div class="card stagger"><h3 class="card-title">📊 Grafikonok <span class="badge">skála</span></h3><div class="chart-tabs"><button class="chart-tab active" data-chart="temp">🌡 Hőmérséklet</button><button class="chart-tab" data-chart="precip">🌧 Csapadék</button><button class="chart-tab" data-chart="wind">💨 Szél</button></div><div class="chart-scale" id="chartScale"><div class="scale-item"><span class="scale-dot light"></span><span class="scale-txt" id="scaleLight">Kevés</span></div><div class="scale-item"><span class="scale-dot medium"></span><span class="scale-txt" id="scaleMedium">Közepes</span></div><div class="scale-item"><span class="scale-dot heavy"></span><span class="scale-txt" id="scaleHeavy">Sok</span></div></div><div class="chart-pane active" id="paneTemp"><div class="chart-wrap"><canvas id="chartTemp"></canvas></div></div><div class="chart-pane" id="panePrecip"><div class="chart-wrap"><canvas id="chartPrecip"></canvas></div></div><div class="chart-pane" id="paneWind"><div class="chart-wrap"><canvas id="chartWind"></canvas></div></div></div>
+  <div class="card map-card stagger"><div style="position:relative"><div class="map-container" id="mapContainer"></div><div class="map-legend"><strong>Térkép</strong>📍 Te itt vagy</div></div></div>
+</main>
+<footer>
+  <div style="margin-bottom:6px"><img src="/icon-light.png" alt="OMTG" class="logo-mini" width="24" height="24"><strong style="color:var(--text-2)">OMTG Weather</strong> <span class="build">v5.2.3</span></div>
+  Adatok: <a href="https://open-meteo.com/" target="_blank">Open-Meteo</a> · <a href="https://www.omtg.hu" target="_blank">omtg.hu</a>
+</footer>
+</div>
 </body>
 </html>
