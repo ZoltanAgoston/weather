@@ -771,14 +771,15 @@ class WeatherAnim{
   resize(){
     const r=this.canvas.getBoundingClientRect();
     const dpr=Math.min(window.devicePixelRatio||1,2);
-    this.canvas.width=r.width*dpr;
-    this.canvas.height=r.height*dpr;
+  resize(){
+    const r=this.canvas.getBoundingClientRect();
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    this.w=r.width||600;
+    this.h=r.height||400;
+    this.canvas.width=this.w*dpr;
+    this.canvas.height=this.h*dpr;
     this.ctx.scale(dpr,dpr);
-    this.w=r.width;this.h=r.height;
   }
-  set(type,params){
-    this.type=type;
-    this.windSpeed=params.wind||0;
     this.windAngle=params.windAngle||Math.PI/2;
     this.fx.innerHTML='';
     this.particles=[];
@@ -1073,20 +1074,18 @@ class MapWeatherAnim{
     if(!this.container)return;
     const r=this.container.getBoundingClientRect();
     const dpr=Math.min(window.devicePixelRatio||1,2);
-    this.canvas.width=r.width*dpr;
-    this.canvas.height=r.height*dpr;
-    this.canvas.style.width=r.width+'px';
-    this.canvas.style.height=r.height+'px';
+  resize(){
+    if(!this.container)return;
+    const r=this.container.getBoundingClientRect();
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    this.w=r.width||800;
+    this.h=r.height||460;
+    this.canvas.width=this.w*dpr;
+    this.canvas.height=this.h*dpr;
+    this.canvas.style.width=this.w+"px";
+    this.canvas.style.height=this.h+"px";
     this.ctx.scale(dpr,dpr);
-    this.w=r.width;this.h=r.height;
   }
-  set(type,params){
-    params=params||{};
-    this.windSpeed=params.wind||0;
-    this.windDirRad=params.windDirRad!==undefined?params.windDirRad:Math.PI/2;
-    this.type=type;this.particles=[];
-    if(type==='rain'){const c=Math.min(150,Math.floor((params.intensity||1)*25));for(let i=0;i<c;i++)this.particles.push(this.makeRain());}
-    else if(type==='snow'){const c=Math.min(100,Math.floor((params.intensity||1)*20));for(let i=0;i<c;i++)this.particles.push(this.makeSnow());}
     else if(type==='leaves'){const c=Math.min(20,Math.floor(this.windSpeed/3)+3);for(let i=0;i<c;i++)this.particles.push(this.makeLeaf());}
   }
   makeRain(){return{x:Math.random()*this.w,y:Math.random()*this.h-this.h,vy:Math.sin(this.windDirRad)*this.windSpeed*0.3+6+Math.random()*4,vx:Math.cos(this.windDirRad)*this.windSpeed*0.3,len:6+Math.random()*6,op:0.3+Math.random()*0.4};}
