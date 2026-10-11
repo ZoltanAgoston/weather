@@ -316,14 +316,23 @@ header{display:flex;align-items:center;gap:16px;padding:8px 0 16px}
 .safety-labels{display:flex;justify-content:space-between;font-size:.62rem;color:var(--text-soft);font-family:var(--font-mono);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
 .safety-status{margin-top:8px;font-size:.85rem;font-weight:800;color:var(--text);text-align:center;padding:6px;background:var(--card-2);border-radius:10px}
 
-/* ===== CHARTS ===== */
-.chart-wrap{position:relative;height:220px;margin-top:8px}
+/* ===== CHARTS - uniform scale with colored bands ===== */
+.chart-wrap{position:relative;height:240px;margin-top:8px}
 .chart-wrap canvas{width:100%!important;height:100%!important}
-.chart-tabs{display:flex;gap:4px;background:var(--card-2);border-radius:12px;padding:3px;width:fit-content;margin-bottom:12px}
+.chart-tabs{display:flex;gap:4px;background:var(--card-2);border-radius:12px;padding:3px;width:fit-content;margin-bottom:10px}
 .chart-tab{padding:7px 14px;border-radius:9px;background:transparent;border:none;color:var(--text-soft);font-size:.76rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s var(--ease)}
 .chart-tab.active{background:var(--card);color:var(--accent);box-shadow:var(--shadow-sm)}
 .chart-pane{height:200px;position:relative;display:none}
 .chart-pane.active{display:block}
+.chart-scale{display:flex;gap:8px;margin-bottom:12px;padding:8px 12px;background:var(--card-2);border-radius:12px;flex-wrap:wrap;align-items:center;border:1px solid rgba(15,23,42,.04)}
+.scale-item{display:flex;align-items:center;gap:6px;font-size:.68rem;font-weight:700;color:var(--text-soft);font-family:var(--font-mono);letter-spacing:.2px;transition:all .3s var(--ease)}
+.scale-item:hover{color:var(--text);transform:scale(1.05)}
+.scale-dot{width:14px;height:14px;border-radius:4px;flex-shrink:0;border:1.5px solid transparent;transition:all .2s}
+.scale-item:hover .scale-dot{transform:scale(1.15)}
+.scale-dot.light{background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.6)}
+.scale-dot.medium{background:rgba(251,191,36,.25);border-color:rgba(251,191,36,.7)}
+.scale-dot.heavy{background:rgba(239,68,68,.25);border-color:rgba(239,68,68,.7)}
+.scale-txt{white-space:nowrap}
 
 /* ===== LAYOUT ===== */
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -489,7 +498,13 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
     <div class="weekly" id="weekly"></div>
   </div>
 
-  <!-- CITY GROUPS: right below current weather -->
+  <!-- 16-DAY moved right below 7-day -->
+  <div class="card stagger">
+    <h3 class="card-title">📆 16 napos előrejelzés <span class="badge">vízszintes görgetés</span></h3>
+    <div class="monthly" id="monthly"></div>
+  </div>
+
+  <!-- CITY GROUPS -->
   <div id="cityGroups"></div>
 
   <div class="card ai-insights stagger">
@@ -502,16 +517,16 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
   </div>
 
   <div class="card stagger">
-    <h3 class="card-title">📆 16 napos előrejelzés</h3>
-    <div class="monthly" id="monthly"></div>
-  </div>
-
-  <div class="card stagger">
-    <h3 class="card-title">📊 Grafikonok</h3>
+    <h3 class="card-title">📊 Grafikonok <span class="badge">egységes skála</span></h3>
     <div class="chart-tabs">
       <button class="chart-tab active" data-chart="temp">🌡 Hőmérséklet</button>
       <button class="chart-tab" data-chart="precip">🌧 Csapadék</button>
       <button class="chart-tab" data-chart="wind">💨 Szél</button>
+    </div>
+    <div class="chart-scale" id="chartScale">
+      <div class="scale-item"><span class="scale-dot light"></span><span class="scale-txt" id="scaleLight">Kevés · 0-5°</span></div>
+      <div class="scale-item"><span class="scale-dot medium"></span><span class="scale-txt" id="scaleMedium">Közepes · 5-25°</span></div>
+      <div class="scale-item"><span class="scale-dot heavy"></span><span class="scale-txt" id="scaleHeavy">Sok · 25°+</span></div>
     </div>
     <div class="chart-pane active" id="paneTemp"><div class="chart-wrap"><canvas id="chartTemp"></canvas></div></div>
     <div class="chart-pane" id="panePrecip"><div class="chart-wrap"><canvas id="chartPrecip"></canvas></div></div>
@@ -727,9 +742,42 @@ function renderMonthly(w){const wrap=document.getElementById('monthly');if(!wrap
 function updateAIInsights(c){const g=document.getElementById('aiGrid');if(!g)return;const t=c.temperature_2m||0;const r=c.precipitation||0;const wind=c.wind_speed_10m||0;const wc=c.weather_code;const isR=[51,53,55,61,63,65,80,81,82,95,96,99].includes(wc)||r>.5;let o,a,p,t2;if(t<=-5)o='Vastag télikabát, sapka, kesztyű, sál.';else if(t<10)o='Átmeneti kabát, pulóver, hosszúnadrág.';else if(t<20)o='Könnyű kabát vagy pulóver, farmer.';else if(t<28)o='Póló, könnyű nadrág vagy rövidnadrág.';else o='Póló, rövidnadrág, sok víz, naptej SPF 30+.';if(isR&&wind>30)a='Benti tevékenység ajánlott — eső és erős szél.';else if(isR)a='Esernyővel rövid séta.';else if(t>=20&&t<=26&&!isR&&wind<15)a='Tökéletes! 🎾 tenisz · 🚶 séta · 🏃 futás';else if(t<5&&!isR)a='Síelés · 🎿 havas táj';else if(t>28)a='Reggeli edzés · 🏊 uszoda';else a='Séta · ☕ terasz';if(isR)p='Eső áztatja · locsolás kihagyható.';else if(t>28)p='Reggel/este öntözés.';else if(t<0)p='Fagyveszély · takarás.';else p='Normál öntözési rend.';if(isR||wind>40)t2='Lassabb közlekedés · esernyő';else if(t<0)t2='Csúszós utak · téli gumi';else if(t>30)t2='Klíma · víz a kesztyűtartóban';else t2='Ideális utazási idő';const items=[{ic:'👕',lbl:'Outfit',msg:o},{ic:'🎾',lbl:'Tevékenység',msg:a},{ic:'🌱',lbl:'Növény',msg:p},{ic:'🚗',lbl:'Közlekedés',msg:t2}];g.innerHTML=items.map(i=>`<div class="ai-tile"><div class="ai-ico">${i.ic}</div><div class="ai-body"><div class="ai-lbl">${i.lbl}</div><div class="ai-msg">${i.msg}</div></div></div>`).join('');}
 function buildSummary(c,w,place){const wrap=document.getElementById('summary');if(!wrap)return;const desc=getDesc(c.weather_code);const minT=Math.min(...(w.daily.temperature_2m_min||[c.temperature_2m]));const maxT=Math.max(...(w.daily.temperature_2m_max||[c.temperature_2m]));const rainSum=(w.daily.precipitation_sum||[]).slice(0,3).reduce((a,b)=>a+(b||0),0);wrap.innerHTML=`<div style="font-size:.92rem;line-height:1.7;color:var(--text-2)"><strong style="color:var(--text)">${place}:</strong> ${desc}, <strong>${Math.round(c.temperature_2m)}°C</strong>${c.weather_code!==0&&c.weather_code!==1?` · Érzet: ${Math.round(c.apparent_temperature)}°C`:''}.<br>Ma: <strong>${Math.round(minT)}°C – ${Math.round(maxT)}°C</strong>${rainSum>0?`, 3 nap alatt <strong>${rainSum.toFixed(1)} mm csapadék</strong>.`:''}</div>`;}
 
-function loadCharts(w){if(typeof Chart==='undefined'||!w.daily)return;const labels=w.daily.time.map(t=>{const d=new Date(t);return (d.getMonth()+1)+'.'+d.getDate();});const tmax=w.daily.temperature_2m_max||[];const tmin=w.daily.temperature_2m_min||[];const precip=w.daily.precipitation_sum||w.daily.precipitation||[];const windMax=w.daily.wind_speed_10m_max||w.daily.wind_speed_10m||[];const opts={responsive:true,maintainAspectRatio:false,animation:{duration:1200,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(15,23,42,.95)',borderColor:'rgba(37,99,235,.4)',borderWidth:1,titleColor:'#fff',bodyColor:'#e2e8f0',padding:12,cornerRadius:10}},scales:{x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(15,23,42,.05)'}},y:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(15,23,42,.05)'}}}};const grad=(cv,c1,c2)=>{const g=cv.getContext('2d').createLinearGradient(0,0,0,200);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;};try{const cv=document.getElementById('chartTemp');if(cv){if(chartInst.temp)chartInst.temp.destroy();chartInst.temp=new Chart(cv,{type:'line',data:{labels,datasets:[{label:'Max',data:tmax,borderColor:'#f87171',backgroundColor:grad(cv,'rgba(248,113,113,.4)','rgba(248,113,113,0)'),fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#f87171',pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5},{label:'Min',data:tmin,borderColor:'#3b82f6',backgroundColor:grad(cv,'rgba(59,130,246,.3)','rgba(59,130,246,0)'),fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#3b82f6',pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5}]},options:opts});}}catch(e){}try{const cv=document.getElementById('chartPrecip');if(cv){if(chartInst.precip)chartInst.precip.destroy();chartInst.precip=new Chart(cv,{type:'bar',data:{labels,datasets:[{label:'Csapadék',data:precip,backgroundColor:grad(cv,'rgba(6,182,212,.7)','rgba(6,182,212,.2)'),borderColor:'#06b6d4',borderWidth:0,borderRadius:8}]},options:opts});}}catch(e){}try{const cv=document.getElementById('chartWind');if(cv){if(chartInst.wind)chartInst.wind.destroy();chartInst.wind=new Chart(cv,{type:'line',data:{labels,datasets:[{label:'Szél',data:windMax,borderColor:'#a78bfa',backgroundColor:grad(cv,'rgba(167,139,250,.4)','rgba(167,139,250,0)'),fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#a78bfa',pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5}]},options:opts});}}catch(e){}}
+function loadCharts(w){if(typeof Chart==='undefined'||!w.daily)return;const labels=w.daily.time.map(t=>{const d=new Date(t);return (d.getMonth()+1)+'.'+d.getDate();});const tmax=w.daily.temperature_2m_max||[];const tmin=w.daily.temperature_2m_min||[];const precip=w.daily.precipitation_sum||w.daily.precipitation||[];const windMax=w.daily.wind_speed_10m_max||w.daily.wind_speed_10m||[];const baseOpts={responsive:true,maintainAspectRatio:false,animation:{duration:1200,easing:'easeOutQuart'},plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(15,23,42,.95)',borderColor:'rgba(37,99,235,.4)',borderWidth:1,titleColor:'#fff',bodyColor:'#e2e8f0',padding:12,cornerRadius:10,titleFont:{weight:'700'},bodyFont:{size:12}}};const grad=(cv,c1,c2)=>{const g=cv.getContext('2d').createLinearGradient(0,0,0,200);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;};try{const cv=document.getElementById('chartTemp');if(cv){if(chartInst.temp)chartInst.temp.destroy();chartInst.temp=new Chart(cv,{type:'line',data:{labels,datasets:[{label:'Max',data:tmax,borderColor:'#f87171',backgroundColor:grad(cv,'rgba(248,113,113,.35)','rgba(248,113,113,0)'),fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#f87171',pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5},{label:'Min',data:tmin,borderColor:'#3b82f6',backgroundColor:grad(cv,'rgba(59,130,246,.3)','rgba(59,130,246,0)'),fill:true,tension:.4,pointRadius:4,pointBackgroundColor:'#3b82f6',pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5}]},options:{...baseOpts,scales:{x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(15,23,42,.05)'}},y:{min:0,max:35,ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+'°'},grid:{color:'rgba(15,23,42,.05)'}}},plugins:{...baseOpts.plugins,chartBands:{bands:[{min:0,max:5,color:'rgba(59,130,246,.08)'},{min:5,max:25,color:'rgba(34,197,94,.08)'},{min:25,max:35,color:'rgba(239,68,68,.08)'}]}}}});}}catch(e){console.warn('temp chart:',e);}try{const cv=document.getElementById('chartPrecip');if(cv){if(chartInst.precip)chartInst.precip.destroy();chartInst.precip=new Chart(cv,{type:'bar',data:{labels,datasets:[{label:'Csapadék',data:precip,backgroundColor:precip.map(v=>v>10?'rgba(239,68,68,.7)':v>2?'rgba(251,191,36,.7)':'rgba(34,197,94,.7)'),borderColor:precip.map(v=>v>10?'#ef4444':v>2?'#fbbf24':'#22c55e'),borderWidth:1,borderRadius:6}]},options:{...baseOpts,scales:{x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{display:false}},y:{min:0,max:50,ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+'mm'},grid:{color:'rgba(15,23,42,.05)'}}},plugins:{...baseOpts.plugins,chartBands:{bands:[{min:0,max:2,color:'rgba(34,197,94,.1)'},{min:2,max:10,color:'rgba(251,191,36,.1)'},{min:10,max:50,color:'rgba(239,68,68,.1)'}]}}}});}}catch(e){console.warn('precip chart:',e);}try{const cv=document.getElementById('chartWind');if(cv){if(chartInst.wind)chartInst.wind.destroy();chartInst.wind=new Chart(cv,{type:'line',data:{labels,datasets:[{label:'Szél',data:windMax,borderColor:'#a78bfa',backgroundColor:grad(cv,'rgba(167,139,250,.35)','rgba(167,139,250,0)'),fill:true,tension:.4,pointRadius:4,pointBackgroundColor:windMax.map(v=>v>30?'#ef4444':v>15?'#fbbf24':'#a78bfa'),pointBorderColor:'#fff',pointBorderWidth:2,borderWidth:2.5,pointRadius:windMax.map(v=>v>30?6:v>15?5:4)}]},options:{...baseOpts,scales:{x:{ticks:{color:'#94a3b8',font:{size:10}},grid:{color:'rgba(15,23,42,.05)'}},y:{min:0,max:80,ticks:{color:'#94a3b8',font:{size:10},callback:v=>v+' km/h'},grid:{color:'rgba(15,23,42,.05)'}}},plugins:{...baseOpts.plugins,chartBands:{bands:[{min:0,max:15,color:'rgba(34,197,94,.08)'},{min:15,max:30,color:'rgba(251,191,36,.1)'},{min:30,max:80,color:'rgba(239,68,68,.1)'}]}}}});}}catch(e){console.warn('wind chart:',e);}}
+// ==== CHART BAND PLUGIN - colored zones ====
+const chartBandsPlugin={
+  id:'chartBands',
+  beforeDatasetsDraw(chart){
+    const {ctx,chartArea,scales}=chart;
+    if(!scales.y||!chart.options.plugins?.chartBands?.bands)return;
+    chart.options.plugins.chartBands.bands.forEach(band=>{
+      const yTop=scales.y.getPixelForValue(band.max);
+      const yBottom=scales.y.getPixelForValue(Math.max(band.min,0));
+      if(yBottom<chartArea.top||yTop>chartArea.bottom)return;
+      ctx.save();
+      ctx.fillStyle=band.color;
+      ctx.fillRect(chartArea.left,Math.max(yTop,chartArea.top),chartArea.right-chartArea.left,Math.min(yBottom,chartArea.bottom)-Math.max(yTop,chartArea.top));
+      ctx.restore();
+    });
+  }
+};
+if(typeof Chart!=='undefined')Chart.register(chartBandsPlugin);
 
-document.addEventListener('click',e=>{const tab=e.target.closest('.chart-tab');if(!tab)return;const which=tab.getAttribute('data-chart');document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');document.querySelectorAll('.chart-pane').forEach(p=>p.classList.remove('active'));document.getElementById('pane'+(which==='temp'?'Temp':which==='precip'?'Precip':'Wind')).classList.add('active');});
+// ==== SCALE LABELS for current chart ====
+const SCALE_LABELS={
+  temp:{light:'Kevés · 0-5° (hideg)',medium:'Közepes · 5-25° (kellemes)',heavy:'Sok · 25°+ (meleg/forró)'},
+  precip:{light:'Kevés · 0-2mm (szitálás)',medium:'Közepes · 2-10mm (eső)',heavy:'Sok · 10mm+ (zápor)'},
+  wind:{light:'Kevés · 0-15 km/h (szélcsend)',medium:'Közepes · 15-30 km/h (szeles)',heavy:'Sok · 30+ km/h (viharos)'}
+};
+function updateScaleLabels(which){
+  const l=SCALE_LABELS[which];if(!l)return;
+  const sl=document.getElementById('scaleLight');if(sl)sl.textContent=l.light;
+  const sm=document.getElementById('scaleMedium');if(sm)sm.textContent=l.medium;
+  const sh=document.getElementById('scaleHeavy');if(sh)sh.textContent=l.heavy;
+}
+updateScaleLabels('temp');
+
+
+document.addEventListener('click',e=>{const tab=e.target.closest('.chart-tab');if(!tab)return;const which=tab.getAttribute('data-chart');document.querySelectorAll('.chart-tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');document.querySelectorAll('.chart-pane').forEach(p=>p.classList.remove('active'));document.getElementById('pane'+(which==='temp'?'Temp':which==='precip'?'Precip':'Wind')).classList.add('active');updateScaleLabels(which);});
 
 function loadSavedLocs(){try{savedLocs=JSON.parse(localStorage.getItem('omtg_saved_locs')||'[]')}catch(e){savedLocs=[]}renderSavedLocs();}
 function saveLoc(name){if(!name)return;if(savedLocs.find(l=>l.name===name)){setStatus('⭐ Már mentve: '+name);return}savedLocs.push({name});localStorage.setItem('omtg_saved_locs',JSON.stringify(savedLocs));renderSavedLocs();setStatus('⭐ Mentve: '+name);}
