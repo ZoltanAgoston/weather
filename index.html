@@ -496,7 +496,7 @@ function render(data){
     document.getElementById('cityName').textContent=place;
     document.getElementById('country').textContent=country;
     document.getElementById('statsGrid').innerHTML=buildStats(c,sunrise,sunset);
-    initWeatherAnim();applyWeatherAnim(c);initMapAnim();applyMapAnim(c);loadChart(w);renderWeekly(w);renderMonthly(w);
+    initWeatherAnim();applyWeatherAnim(c);loadChart(w);renderWeekly(w);renderMonthly(w);
   }catch(e){console.error('Render:',e);document.getElementById('summary').innerHTML='<h2>⚠️ Render hiba</h2><p>'+e.message+'</p>';}
 }
 
