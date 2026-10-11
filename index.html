@@ -727,8 +727,6 @@ document.getElementById('favBtn').addEventListener('click',()=>{const c=cityInpu
 document.getElementById('defaultLocBtn').addEventListener('click',toggleDefaultLocation);
 document.addEventListener('click',e=>{if(!e.target.closest('.search-wrap'))hideSuggestions()});
 
-loadSavedLocs();
-load();
 
 /* WEATHER ANIMATION SYSTEM */
 class WeatherAnim{
@@ -1156,6 +1154,11 @@ const CLOTHING_ICONS_NEW={
 // Replace old icons with new ones
 Object.assign(CLOTHING_ICONS,CLOTHING_ICONS_NEW);
 
+
+
+// Initialize app after all classes/functions are defined
+loadSavedLocs();
+load();
 </script>
 </body>
 </html>
