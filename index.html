@@ -948,37 +948,6 @@ function initWeatherAnim(){
   weatherAnim.start();
 }
 
-function applyWeatherAnim(c){
-  if(!weatherAnim)return;
-  const wc=c.weather_code;
-  const t=c.temperature_2m;
-  const r=c.precipitation||0;
-  const w=c.wind_speed_10m||0;
-  const wd=w>0?Math.PI/2:0;
-  if([95,96,99].includes(wc)){
-    weatherAnim.set('thunder',{intensity:Math.max(2,r)});
-  }else if([71,73,75,77,85,86].includes(wc)||(t<0&&r>0.1)){
-    weatherAnim.set('snow',{intensity:Math.max(1,r*2)});
-  }else if([51,53,55,61,63,65,80,81,82].includes(wc)||r>0.1){
-    weatherAnim.set('rain',{intensity:Math.max(0.5,r),wind:w,windAngle:wd});
-  }else if([45,48].includes(wc)){
-    weatherAnim.set('fog',{});
-  }else if(wc===0||wc===1){
-    weatherAnim.set('sun',{});
-  }else if(wc===2){
-    weatherAnim.set('mixed',{intensity:0.2,cloudy:2});
-  }else if(wc===3){
-    weatherAnim.set('cloud',{cloudy:3});
-  }else{
-    weatherAnim.set('cloud',{cloudy:2});
-  }
-  // If windy and no rain, add leaves
-  if(w>15&&![95,96,99,71,73,75,77,85,86,51,53,55,61,63,65,80,81,82].includes(wc)&&r<0.1&&t>2){
-    setTimeout(()=>{
-      if(weatherAnim)weatherAnim.set('leaves',{wind:w,windAngle:wd});
-    },500);
-  }
-}
 
 </script>
 
