@@ -123,6 +123,9 @@ canvas{max-height:240px!important}
 .day:hover{transform:translateY(-3px);background:rgba(79,172,254,.1);border-color:var(--accent);box-shadow:0 8px 20px rgba(79,172,254,.2)}
 .day.today{background:linear-gradient(135deg,#ff6b9d,#ff8aab);color:#fff;border-color:transparent;box-shadow:0 8px 24px rgba(255,107,157,.3)}
 .day.today::before{content:'📍 Ma';position:absolute;top:6px;right:8px;font-size:.6rem;background:rgba(0,0,0,.2);padding:2px 6px;border-radius:6px;font-weight:700;letter-spacing:.3px}
+.day.weekend{background:linear-gradient(135deg,rgba(168,139,250,.18),rgba(255,107,157,.12));border:1px solid rgba(168,139,250,.4)}
+.day.weekend:hover{background:linear-gradient(135deg,rgba(168,139,250,.3),rgba(255,107,157,.2));border-color:#a78bfa;box-shadow:0 8px 20px rgba(168,139,250,.3)}
+.day.weekend::after{content:'🎉 HÉTVÉGE';position:absolute;top:6px;left:8px;font-size:.55rem;background:linear-gradient(135deg,#a78bfa,#ec4899);color:#fff;padding:2px 6px;border-radius:6px;font-weight:700;letter-spacing:.3px}
 .day-header{display:flex;flex-direction:column;align-items:center;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.1)}
 .day-name{font-size:.82rem;font-weight:700;letter-spacing:.3px}
 .day-date{font-size:.65rem;opacity:.7;margin-top:2px}
@@ -145,6 +148,8 @@ canvas{max-height:240px!important}
 .mday{flex:0 0 78px;background:var(--card-2);border:1px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center;transition:all .2s}
 .mday:hover{transform:translateY(-2px);background:rgba(79,172,254,.1);border-color:var(--accent)}
 .mday.today{background:linear-gradient(135deg,#ff6b9d,#ff8aab);color:#fff;border-color:transparent}
+.mday.weekend{background:linear-gradient(135deg,rgba(168,139,250,.2),rgba(236,72,153,.15));border:1px solid rgba(168,139,250,.4)}
+.mday.weekend:hover{background:linear-gradient(135deg,rgba(168,139,250,.35),rgba(236,72,153,.25));border-color:#a78bfa}
 .mday .mday-name{font-size:.72rem;font-weight:700}
 .mday .mday-date{font-size:.6rem;opacity:.7;margin-top:1px}
 .mday .mday-icon{font-size:1.4rem;margin:6px 0;line-height:1}
@@ -443,21 +448,41 @@ function render(data){
 let mapInstance=null;
 function renderMap(data){
   const lat=data.geo.lat,lon=data.geo.lon;const w=data.weather;
-  if(mapInstance){mapInstance.remove();mapInstance=null;}
-  setTimeout(()=>{
-    const container=document.getElementById('mapContainer');if(!container)return;
-    mapInstance=L.map('mapContainer',{zoomControl:true,attributionControl:true}).setView([lat,lon],9);
+  if(mapInstance){try{mapInstance.remove()}catch(e){}mapInstance=null;}
+  const container=document.getElementById('mapContainer');
+  if(!container)return;
+  
+  // Use requestAnimationFrame to ensure container has dimensions
+  requestAnimationFrame(()=>{
+    if(!container.offsetWidth||!container.offsetHeight)return;
+    try{
+      mapInstance=L.map('mapContainer',{zoomControl:true,attributionControl:true}).setView([lat,lon],9);
+    }catch(e){console.error('Map init error:',e);return}
+    
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap'}).addTo(mapInstance);
+    
+    // 50km circle
     L.circle([lat,lon],{radius:50000,color:'#4facfe',fillColor:'#4facfe',fillOpacity:0.08,weight:2,dashArray:'6 4'}).addTo(mapInstance).bindPopup('50 km-es határ');
-    const cityIcon=L.divIcon({className:'city-marker',html:'<div style="background:linear-gradient(135deg,#4facfe,#5b7fff);width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:1.1rem">📍</div>',iconSize:[34,34],iconAnchor:[17,17]});
+    
+    // City center marker (always visible)
     const now=new Date();
     const hIdx=w.hourly.time.findIndex(t=>new Date(t)>=now);
     const currentTemp=hIdx>=0?Math.round(w.hourly.temperature_2m[hIdx]):Math.round(w.current.temperature_2m);
     const currentRain=hIdx>=0?(w.hourly.precipitation[hIdx]||0):0;
     const currentWind=hIdx>=0?Math.round(w.hourly.wind_speed_10m[hIdx]||0):Math.round(w.current.wind_speed_10m);
-    L.marker([lat,lon],{icon:cityIcon}).addTo(mapInstance)
-      .bindPopup(`<b>${data.geo.display.split(',')[0]}</b><br>🌡️ ${currentTemp}°C<br>💧 ${currentRain.toFixed(1)} mm/h<br>💨 ${currentWind} km/h`)
-      .openPopup();
+    const currentCode=hIdx>=0?w.hourly.weather_code[hIdx]:w.current.weather_code;
+    const currentIcon=WMO_CODE[currentCode]||{i:'🌡️',d:''};
+    
+    L.circleMarker([lat,lon],{
+      radius:14,fillColor:'#4facfe',color:'#fff',weight:3,fillOpacity:1
+    }).addTo(mapInstance).bindPopup(
+      `<b>${data.geo.display.split(',')[0]}</b>`+
+      `<div style="font-size:1.3rem;margin:4px 0">${currentIcon.i} ${currentTemp}°C</div>`+
+      `💧 ${currentRain.toFixed(1)} mm/h<br>💨 ${currentWind} km/h`+
+      `<br><span style="opacity:.7;font-size:.75rem">${currentIcon.d}</span>`
+    ).openPopup();
+    
+    // 8 direction markers on 50km circle
     const km_to_deg=1/111;const radius_km=50;
     for(let i=0;i<8;i++){
       const angle=(i*45)*Math.PI/180;
@@ -465,17 +490,38 @@ function renderMap(data){
       const dlon=Math.sin(angle)*radius_km*km_to_deg/Math.cos(lat*Math.PI/180);
       const nlat=lat+dlat,nlon=lon+dlon;
       const offsetTemp=currentTemp+Math.round(Math.cos(angle)*2);
-      const offsetRain=(currentRain*0.8).toFixed(1);
-      const offsetWind=currentWind+Math.round(Math.sin(angle)*3);
+      const offsetRain=Math.max(0,currentRain+(Math.sin(angle)*0.3));
+      const offsetWind=Math.max(0,currentWind+Math.round(Math.sin(angle)*4));
       const dirLabel=WIND_DIRS[i];
       const cstr=tempColor(offsetTemp);
-      const dirIcon=L.divIcon({className:'dir-marker',html:`<div style="background:linear-gradient(135deg,${cstr},#fff);width:48px;height:48px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#0a0e27;line-height:1.1"><div>${dirLabel}</div><div style="font-size:.85rem">${offsetTemp}°</div></div>`,iconSize:[48,48],iconAnchor:[24,24]});
-      L.marker([nlat,nlon],{icon:dirIcon}).addTo(mapInstance)
-        .bindPopup(`<b>${dirLabel} irány (${radius_km} km)</b><br>🌡️ ${offsetTemp}°C (becsült)<br>💧 ${offsetRain} mm/h<br>💨 ${offsetWind} km/h`);
+      
+      // Reliable circleMarker with tooltip
+      const m=L.circleMarker([nlat,nlon],{
+        radius:18,fillColor:cstr,color:'#fff',weight:2,fillOpacity:0.9,opacity:1
+      }).addTo(mapInstance);
+      
+      m.bindTooltip(
+        `<div style="text-align:center;font-weight:700;line-height:1.4">`+
+        `<div style="font-size:.85rem;margin-bottom:2px">${dirLabel} · ${radius_km} km</div>`+
+        `<div style="font-size:1.4rem;color:${cstr}">${offsetTemp}°C</div>`+
+        `<div style="font-size:.75rem;opacity:.9">💧 ${offsetRain.toFixed(1)} mm/h · 💨 ${offsetWind} km/h</div>`+
+        `</div>`,
+        {permanent:false,direction:'top',offset:[0,-10],className:'dir-tooltip',opacity:1}
+      );
+      
+      m.bindPopup(
+        `<b>${dirLabel} irány (${radius_km} km)</b>`+
+        `<div style="font-size:1.2rem;margin:4px 0;color:${cstr}">🌡️ ${offsetTemp}°C</div>`+
+        `💧 ${offsetRain.toFixed(1)} mm/h<br>💨 ${offsetWind} km/h`+
+        `<br><span style="opacity:.7;font-size:.75rem">Becsült érték a kör szélén</span>`
+      );
     }
-    mapInstance.fitBounds([[lat-0.45,lon-0.45],[lat+0.45,lon+0.45]],{padding:[20,20]});
-    setTimeout(()=>mapInstance&&mapInstance.invalidateSize(),100);
-  },50);
+    
+    // Fit bounds to show all markers
+    mapInstance.fitBounds([[lat-0.5,lon-0.5],[lat+0.5,lon+0.5]],{padding:[30,30]});
+    
+    setTimeout(()=>{if(mapInstance)mapInstance.invalidateSize()},200);
+  });
 }
 
 function loadChart(w){
@@ -542,7 +588,7 @@ function renderWeekly(w){
     const cloth=clothingAdvice(w.daily.temperature_2m_max[i],w.daily.precipitation_sum[i]||0,w.daily.wind_speed_10m_max?w.daily.wind_speed_10m_max[i]:0);
     const rain=(w.daily.precipitation_sum[i]||0).toFixed(1);
     const wind=w.daily.wind_speed_10m_max?Math.round(w.daily.wind_speed_10m_max[i]):0;
-    html+=`<div class="day${isToday?' today':''}">
+    const dow=d.getDay();const isWeekend=dow===0||dow===6;html+=`<div class="day${isToday?' today':''}${isWeekend&&!isToday?' weekend':''}">
       <div class="day-header">
         <div class="day-name">${dayName}</div>
         <div class="day-date">${dayDateStr}</div>
@@ -574,7 +620,7 @@ function renderMonthly(w){
     const dateStr=d.toLocaleDateString('hu-HU',{month:'short',day:'numeric'});
     const rain=(w.daily.precipitation_sum[i]||0).toFixed(1);
     const wind=w.daily.wind_speed_10m_max?Math.round(w.daily.wind_speed_10m_max[i]):0;
-    html+=`<div class="mday${isToday?' today':''}">
+    const dow2=d.getDay();const isWeekend2=dow2===0||dow2===6;html+=`<div class="mday${isToday?' today':''}${isWeekend2&&!isToday?' weekend':''}">
       <div class="mday-name">${lbl}</div>
       <div class="mday-date">${dateStr}</div>
       <div class="mday-icon">${wd.i}</div>
